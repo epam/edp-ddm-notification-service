@@ -1,0 +1,20 @@
+notifications:
+  enabled: false
+
+user-settings-service-api:
+  url: http://localhost:8300
+
+keycloak:
+  url: http://localhost:8200
+  system-user:
+    realm: systemUserRealm
+    client-id: systemUserClientId
+    client-secret: systemUserClientSecret
+
+audit:
+  kafka:
+    bootstrap: localhost:9092
+    topic: audit-events
+    schema-registry-url: http://localhost:8081
+    ssl:
+      enabled: false

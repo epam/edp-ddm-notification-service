@@ -1,0 +1,17 @@
+{{- if .Values.configWatcher.deploy -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service-channel-configuration
+  labels:
+    {{- include "ddm-notification-service.configWatcher.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: 8080
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "ddm-notification-service.selectorLabels" . | nindent 4 }}
+{{- end }}

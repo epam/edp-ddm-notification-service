@@ -1,0 +1,54 @@
+{{- if .Values.configWatcher.deploy -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ddm-notification-service.fullname" . }}-config-watcher
+  labels:
+    {{- include "ddm-notification-service.configWatcher.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "ddm-notification-service.configWatcher.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+    {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+    {{- end }}
+      labels:
+        {{- include "ddm-notification-service.configWatcher.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ddm-notification-service.configWatcher.serviceAccountName" . }}
+      containers:
+        - name: {{ include "ddm-notification-service.fullname" . }}-config-watcher
+          image: "{{ .Values.configWatcher.image.name }}:{{ .Values.configWatcher.image.version }}"
+          imagePullPolicy: {{ .Values.configWatcher.image.pullPolicy }}
+          readinessProbe:
+            httpGet:
+              port: 8888
+              path: /actuator/health/readiness
+          livenessProbe:
+            httpGet:
+              port: 8888
+              path: /actuator/health/liveness
+          ports:
+            - name: http
+              containerPort: 8888
+              protocol: TCP
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}

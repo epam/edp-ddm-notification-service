@@ -1,0 +1,21 @@
+{{- if .Values.configWatcher.deploy -}}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+    name: {{ include "ddm-notification-service.configWatcher.serviceAccountName" . }}-role
+rules:
+  - apiGroups:
+      - ""
+      - extensions
+      - apps
+    resources:
+      - configmaps
+      - pods
+      - services
+      - endpoints
+      - secrets
+    verbs:
+      - get
+      - list
+      - watch
+{{- end }}

@@ -1,0 +1,73 @@
+notifications:
+  enabled: true
+
+data-platform:
+  kafka:
+    enabled: ${notifications.enabled}
+    consumer:
+      enabled: true
+      group-id: notifications-service
+      key-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
+      trusted-packages:
+        - com.epam.digital.data.platform.notification.dto
+      error-handler:
+        enabled-dlq: true
+      custom-config:
+        "[retry.backoff.ms]": 10000
+        "[spring.deserializer.key.delegate.class]": org.apache.kafka.common.serialization.StringDeserializer
+        "[spring.deserializer.value.delegate.class]": org.springframework.kafka.support.serializer.JsonDeserializer
+        "[isolation.level]": read_committed
+    producer:
+      enabled: true
+    topics:
+      user-notifications: user-notifications
+    topic-properties:
+      creation:
+        enabled: true
+        enabled-dlq: true
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQL10Dialect
+  zipkin:
+    baseUrl: http://zipkin.istio-system.svc:9411
+    sender:
+      type: web
+  sleuth:
+    opentracing:
+      enabled: true
+    baggage:
+      correlation-enabled: true
+      remote-fields: x-request-id
+      correlation-fields: x-request-id
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: 'health'
+  endpoint:
+    health:
+      enabled: true
+      show-details: always
+      group:
+        liveness:
+          include: livenessState
+        readiness:
+          include: readinessState
+    loggers:
+      enabled: true
+    prometheus:
+      enabled: true
+  health:
+    livenessstate:
+      enabled: true
+    readinessstate:
+      enabled: true
+    kafka:
+      enabled: false
+    kubernetes:
+      enabled: false
