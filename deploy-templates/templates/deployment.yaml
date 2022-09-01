@@ -1,0 +1,152 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ddm-notification-service.fullname" . }}
+  labels:
+    {{- include "ddm-notification-service.labels" . | nindent 4 }}
+spec:
+{{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+{{- end }}
+  selector:
+    matchLabels:
+      {{- include "ddm-notification-service.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/smtp-configmap: {{ include (print $.Template.BasePath "/smtp-server-configmap.yaml") . | sha256sum }}
+        checksum/smtp-secret: {{ include (print $.Template.BasePath "/smtp-server-secret.yaml") . | sha256sum }}
+      {{- with .Values.podAnnotations }}
+          {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "ddm-notification-service.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ddm-notification-service.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers:
+        - command: [ 'sh', '-c', 'while ! nc -w 1 {{ .Values.kafka.service | replace "http://" "" }} </dev/null; do echo waiting for kafka-cluster-kafka-bootstrap; sleep 5; done;' ]
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          name: kafka-cluster-kafka-bootstrap-init
+        - command: [ 'sh', '-c', 'while ! nc -w 1 {{ .Values.audit.kafka.schemaRegistryUrl | replace "http://" "" }} </dev/null; do echo waiting for kafka-schema-registry; sleep 5; done;' ]
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          name: kafka-schema-registry-init
+        - command: [ 'sh', '-c', 'while ! nc -w 1 {{ .Values.db.url }}:{{ .Values.db.port }} </dev/null; do echo waiting for citus-master; sleep 5; done;' ]
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          name: citus-master-init
+        - command: [ 'sh', '-c', 'while ! nc -w 1 {{ .Values.userSettingsServiceApi.url | replace "http://" "" }} </dev/null; do echo waiting for user-settings-service-api; sleep 5; done;' ]
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          name: user-settings-service-api-init
+        - command: [ 'sh', '-c', 'while ! nc -w 1 {{ .Values.keycloak.host }}:443 </dev/null; do echo waiting for keycloak; sleep 5; done;' ]
+          image: busybox
+          imagePullPolicy: IfNotPresent
+          name: keycloak-init
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.name }}:{{ .Values.image.version }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            - name: WATCH_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.namespace
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: KAFKA_USER_KEYSTORE_CERTIFICATE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.kafka.user }}
+                  key: user.crt
+            - name: KAFKA_USER_KEYSTORE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.kafka.user }}
+                  key: user.key
+            - name: KAFKA_CLUSTER_TRUSTSTORE
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.kafka.clusterName }}-cluster-ca-cert
+                  key: ca.crt
+          volumeMounts:
+            - mountPath: {{ .Values.appConfigMountPath }}
+              name: {{ .Chart.Name }}
+            - mountPath: {{ .Values.dbSecretMountPath }}
+              name: {{ .Values.db.secret }}
+            - mountPath: {{ .Values.secretsMountPath }}
+              name: {{ .Values.keycloak.systemUserClient.secretName }}
+            - mountPath: {{ .Values.smtpSecretMountPath }}
+              name: {{ .Values.smtp.secretName }}-secret
+            - mountPath: {{ .Values.smtpConfigMapMountPath }}
+              name: {{ .Values.smtp.configMapName }}-configmap
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+{{- if .Values.framework }}
+{{- if ne .Values.framework "operator-sdk" }}
+          livenessProbe:
+            tcpSocket:
+              port: http
+          readinessProbe:
+            tcpSocket:
+              port: http
+{{- end}}
+{{- end}}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      volumes:
+        - name: {{ .Chart.Name }}
+          configMap:
+            name: {{ .Chart.Name }}
+        - name: {{ .Values.smtp.configMapName }}-configmap
+          configMap:
+            name: {{ .Values.smtp.configMapName }}
+        - name: {{ .Values.db.secret }}
+          secret:
+            secretName: {{ .Values.db.secret }}
+            items:
+              - key: notificationServiceName
+                path: data-platform.datasource.username
+              - key: notificationServicePass
+                path: data-platform.datasource.password
+        - name: {{ .Values.keycloak.systemUserClient.secretName }}
+          secret:
+            secretName: {{ .Values.keycloak.systemUserClient.secretName }}
+            items:
+              - key: clientSecret
+                path: keycloak.system-user.client-secret
+        - name: {{ .Values.smtp.secretName }}-secret
+          secret:
+            secretName: {{ .Values.smtp.secretName }}
+            items:
+              - key: notifications.email.username
+                path: spring.mail.username
+              - key: notifications.email.password
+                path: spring.mail.password
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

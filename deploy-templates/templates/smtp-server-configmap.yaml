@@ -1,0 +1,28 @@
+{{- if .Values.global.notifications.email }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notification-service-channel-configuration
+  namespace: {{ .Release.Namespace }}
+  labels:
+    spring.cloud.kubernetes.config: 'true'
+data:
+  application.yaml: |-
+    notifications:
+      email:
+        {{- if eq .Values.global.notifications.email.type "internal" }}
+        host: mailu-front.smtp-server.svc
+        port: 587
+        {{- else }}
+        host: {{ .Values.global.notifications.email.host }}
+        port: {{ default "587" .Values.global.notifications.email.port }}
+        {{- end }}
+        properties:
+          mail:
+            transport:
+              protocol: smtp
+            smtp:
+              auth: true
+              starttls:
+                enable: true
+{{- end }}

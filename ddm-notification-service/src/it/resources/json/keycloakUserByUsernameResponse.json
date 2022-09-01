@@ -1,0 +1,19 @@
+[
+  {
+    "id": "3fa85f64-1234-4562-b3fc-2c963f66afa6",
+    "createdTimestamp": 1644303637852,
+    "username": "testuser",
+    "enabled": true,
+    "totp": false,
+    "emailVerified": true,
+    "attributes": {
+      "fullName": "testFullName",
+      "drfo": [
+        "123"
+      ]
+    },
+    "disableableCredentialTypes": [],
+    "requiredActions": [],
+    "notBefore": 0
+  }
+]

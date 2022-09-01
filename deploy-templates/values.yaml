@@ -1,0 +1,149 @@
+# Default values for ddm-notification-service.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  name: ddm-notification-service
+  version: 1.16.0
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+framework: java11
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  host: ddm-notification-service
+  path: "/"
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+  # targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+appConfigMountPath: "/app/config/main"
+secretsMountPath: "/app/secrets/main"
+dbSecretMountPath: "/app/secrets/db"
+smtpSecretMountPath: "/app/secrets/smtp"
+smtpConfigMapMountPath: "/app/config/smtp"
+
+global:
+  kafkaOperator:
+    replicationFactor: 3
+  notifications:
+    email:
+      type: internal
+      address: mock@mail.com
+      password: secure
+      host: smtp.mail.com
+      port: 587
+
+kafka:
+  service: kafka-cluster-kafka-bootstrap:9093
+  user: notification-service-user
+  clusterName: kafka-cluster
+  sslEnabled: true
+  sslUserKey: ${KAFKA_USER_KEYSTORE_KEY}
+  sslUserCertificate: ${KAFKA_USER_KEYSTORE_CERTIFICATE}
+  sslClusterCertificate: ${KAFKA_CLUSTER_TRUSTSTORE}
+  numPartitions: 15
+  sslCertType: PEM
+
+db:
+  url: citus-master
+  secret: citus-roles-secrets
+  name: notifications
+  port: 5432
+  connectionTimeout: 4000
+
+keycloak:
+  systemUserClient:
+    clientName: realm-admin
+    realm: citizen-portal
+    public: false
+    secretName: keycloak-realm-admin-citizen-client-secret
+
+audit:
+  kafka:
+    topic: audit-events
+    schemaRegistryUrl: http://kafka-schema-registry:8081
+
+smtp:
+  secretName: notification-service-channel-configuration
+  configMapName: notification-service-channel-configuration
+
+userSettingsServiceApi:
+  url: http://user-settings-service-api:8080
+
+configWatcher:
+  deploy: false
+  image:
+    name: springcloud/spring-cloud-kubernetes-configuration-watcher
+    version: 2.1.3
+    pullPolicy: IfNotPresent
+  serviceAccount:
+    # Specifies whether a service account should be created
+    create: true
+    # Annotations to add to the service account
+    annotations: {}
+    # The name of the service account to use.
+    # If not set and create is true, a name is generated using the fullname template
+    name: ""

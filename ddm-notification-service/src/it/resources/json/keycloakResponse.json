@@ -1,0 +1,7 @@
+{
+  "realm": "test-realm",
+  "public_key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAz4v+6ncZHJM5MHsvZ0FmTyK1kxV59wuNCA3z+nxzsCSB4TOn5XcFgFBXoL94v3sXA946gM/X220r41yrXefs5J9eNU5xNgZaRedPGWMXHTab2Sj+D4YLvJh+wRTc0yFHCVRbeMDndjp7QWXvzZ0H/jZmiDwQ5cMlkrgb9tjAVIudKQbt4nzC3gM/o5Y0gYUtXtM5C+etrmxK2SXB3EdBbuHs9NTh0iQL5Bj/sZxelsVw+sSR8A3aJFrFjWYumqwU9Z+iky4vwUzJOSuwzoz0wchYnMOQ8J7dc2CGuojlNu/rtuztippYICxCuBRQLsv4hguE9Wo9j+apQh1+MmJcpQIDAQAB",
+  "token-service": "https://platform-keycloak.com/auth/realms/test-realm/protocol/openid-connect",
+  "account-service": "https://platform-keycloak.com/auth/realms/test-relm/account",
+  "tokens-not-before": 0
+}
