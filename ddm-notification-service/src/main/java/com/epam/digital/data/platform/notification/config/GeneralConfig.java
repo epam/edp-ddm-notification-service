@@ -27,6 +27,7 @@ import com.epam.digital.data.platform.notification.service.MailService;
 import com.epam.digital.data.platform.notification.service.NotificationService;
 import com.epam.digital.data.platform.notification.service.UserSettingsService;
 import com.epam.digital.data.platform.notification.template.FreemarkerTemplateResolver;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
 import java.util.Map;
@@ -65,11 +66,9 @@ public class GeneralConfig {
    * Map of the available channels with corresponding notification services
    */
   @Bean(name = "notification-service-map")
-  public Map<String, NotificationService> notificationServiceMap(
+  public Map<Channel, NotificationService> notificationServiceMap(
       EmailNotificationService emailNotificationService) {
-    return Map.of(
-        NotificationChannel.EMAIL.getName(), emailNotificationService
-    );
+    return Map.of(Channel.EMAIL, emailNotificationService);
   }
 
   @Bean
@@ -80,7 +79,7 @@ public class GeneralConfig {
 
   @Bean
   public NotificationFacade notificationFacade(UserSettingsService userSettingsService,
-      @Qualifier("notification-service-map") Map<String, NotificationService> notificationServiceMap,
+      @Qualifier("notification-service-map") Map<Channel, NotificationService> notificationServiceMap,
       NotificationAuditFacade notificationAuditFacade) {
     return new NotificationFacade(userSettingsService, notificationServiceMap,
         notificationAuditFacade);

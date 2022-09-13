@@ -18,7 +18,7 @@ package com.epam.digital.data.platform.notification.service;
 
 import com.epam.digital.data.platform.notification.dto.NotificationDto;
 import com.epam.digital.data.platform.notification.template.FreemarkerTemplateResolver;
-import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
+import com.epam.digital.data.platform.settings.model.dto.ChannelReadDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,13 +34,13 @@ public class EmailNotificationService implements NotificationService {
   private final MailService mailService;
 
   @Override
-  public void notify(NotificationDto notification, SettingsReadDto userSettings) {
+  public void notify(NotificationDto notification, ChannelReadDto channelSettings) {
     log.info("Sending notification via email");
     var template = templateService.getByName(notification.getTemplate());
     var body = templateResolver.resolve(notification.getTemplate(), template,
         notification.getTemplateModel());
 
-    mailService.send(notification.getSubject(), body, userSettings.getEmail());
+    mailService.send(notification.getSubject(), body, channelSettings.getAddress());
     log.info("Email notification was sent");
   }
 }

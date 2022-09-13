@@ -32,6 +32,7 @@ import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.NotificationRecordDto;
 import com.epam.digital.data.platform.notification.repository.NotificationTemplateRepository;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import java.util.Map;
@@ -103,7 +104,7 @@ class NotificationListenerKafkaIT extends BaseKafkaIT {
       AssertionsForClassTypes.assertThat(receivedMessage.getAllRecipients()[0].toString())
           .isEqualTo("test@test.com");
 
-      verify(auditFacade, times(1)).sendAuditOnSuccess("email",
+      verify(auditFacade, times(1)).sendAuditOnSuccess(Channel.EMAIL,
           notificationRecord.getNotification());
     });
   }
@@ -130,7 +131,7 @@ class NotificationListenerKafkaIT extends BaseKafkaIT {
 
   private void stubUserSettings(String keycloakId, String jsonPath) {
     userSettingsWireMock.stubFor(
-        get(urlPathEqualTo(String.format("/settings/%s", keycloakId)))
+        get(urlPathEqualTo(String.format("/api/settings/%s", keycloakId)))
             .willReturn(aResponse().withStatus(200)
                 .withHeader("Content-type", "application/json")
                 .withBody(jsonToStr(jsonPath))));

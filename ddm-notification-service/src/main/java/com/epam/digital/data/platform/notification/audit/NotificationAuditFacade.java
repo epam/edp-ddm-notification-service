@@ -20,6 +20,7 @@ import com.epam.digital.data.platform.notification.audit.dto.AuditResultDto;
 import com.epam.digital.data.platform.notification.audit.dto.DeliveryAuditDto;
 import com.epam.digital.data.platform.notification.audit.dto.NotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.NotificationDto;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.starter.audit.model.EventType;
 import com.epam.digital.data.platform.starter.audit.model.Operation;
 import com.epam.digital.data.platform.starter.audit.model.Status;
@@ -38,23 +39,23 @@ public class NotificationAuditFacade extends AbstractAuditFacade {
     super(auditService, appName, clock);
   }
 
-  public void sendAuditOnSuccess(String channelName, NotificationDto notification) {
+  public void sendAuditOnSuccess(Channel channel, NotificationDto notification) {
     this.sendNotificationAudit(EventType.SYSTEM_EVENT,
         Operation.SEND_USER_NOTIFICATION.name(), Step.AFTER.name(),
         AuditResultDto.builder().status(Status.SUCCESS.name()).build(),
-        channelName, notification);
+        channel, notification);
   }
 
-  public void sendAuditOnFailure(String channelName, NotificationDto notification, Step step,
+  public void sendAuditOnFailure(Channel channel, NotificationDto notification, Step step,
       String failureReason) {
     this.sendNotificationAudit(EventType.SYSTEM_EVENT,
         Operation.SEND_USER_NOTIFICATION.name(), step.name(),
         AuditResultDto.builder().status(Status.FAILURE.name()).failureReason(failureReason).build(),
-        channelName, notification);
+        channel, notification);
   }
 
   private void sendNotificationAudit(EventType eventType, String action, String step,
-      AuditResultDto result, String channel, NotificationDto notificationDto) {
+      AuditResultDto result, Channel channel, NotificationDto notificationDto) {
     var event = createBaseAuditEvent(
         eventType, action, MDC.get(MDC_TRACE_ID_HEADER));
 

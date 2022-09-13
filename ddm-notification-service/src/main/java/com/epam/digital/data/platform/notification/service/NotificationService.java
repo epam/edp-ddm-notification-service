@@ -17,7 +17,7 @@
 package com.epam.digital.data.platform.notification.service;
 
 import com.epam.digital.data.platform.notification.dto.NotificationDto;
-import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
+import com.epam.digital.data.platform.settings.model.dto.ChannelReadDto;
 
 /**
  * The service that manages notifications
@@ -28,7 +28,7 @@ public interface NotificationService {
    * Send notification
    *
    * @param notification contains notification data
-   * @param userSettings contains information about users channel identifiers
+   * @param channelSettings contains information about user channel
    */
-  void notify(NotificationDto notification, SettingsReadDto userSettings);
+  void notify(NotificationDto notification, ChannelReadDto channelSettings);
 }

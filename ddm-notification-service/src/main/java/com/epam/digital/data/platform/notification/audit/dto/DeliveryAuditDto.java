@@ -16,6 +16,7 @@
 
 package com.epam.digital.data.platform.notification.audit.dto;
 
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -27,7 +28,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class DeliveryAuditDto {
 
-  private String channel;
+  private Channel channel;
   private String status;
   private String failureReason;
 }

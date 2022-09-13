@@ -27,7 +27,7 @@ spring:
     password: password
     protocol: smtp
 
-user-settings-service-api:
+user-settings-service:
   url: http://localhost:8878
 
 keycloak:

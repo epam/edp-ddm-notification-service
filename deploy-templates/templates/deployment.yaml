@@ -42,10 +42,10 @@ spec:
           image: busybox
           imagePullPolicy: IfNotPresent
           name: citus-master-init
-        - command: [ 'sh', '-c', 'while ! nc -w 1 {{ .Values.userSettingsServiceApi.url | replace "http://" "" }} </dev/null; do echo waiting for user-settings-service-api; sleep 5; done;' ]
+        - command: [ 'sh', '-c', 'while ! nc -w 1 {{ .Values.userSettingsService.url | replace "http://" "" }} </dev/null; do echo waiting for user-settings-service; sleep 5; done;' ]
           image: busybox
           imagePullPolicy: IfNotPresent
-          name: user-settings-service-api-init
+          name: user-settings-service-init
         - command: [ 'sh', '-c', 'while ! nc -w 1 {{ .Values.keycloak.host }}:443 </dev/null; do echo waiting for keycloak; sleep 5; done;' ]
           image: busybox
           imagePullPolicy: IfNotPresent
