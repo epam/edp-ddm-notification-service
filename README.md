@@ -18,7 +18,7 @@ The workflow:
 #### Prerequisites:
 
 * Kafka is configured and running.
-* user-settings-service-api is configured and running.
+* user-settings-service is configured and running.
 * Postgres database is configured and running;
 * Keycloak is configured and running;
 
@@ -53,7 +53,7 @@ spring:
           starttls:
             enable: true
 
-user-settings-service-api:
+user-settings-service:
   url: base user settings url
 
 keycloak:

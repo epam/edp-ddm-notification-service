@@ -22,6 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.epam.digital.data.platform.integration.idm.service.IdmService;
@@ -32,8 +33,12 @@ import com.epam.digital.data.platform.notification.exception.NotificationExcepti
 import com.epam.digital.data.platform.notification.exception.NotificationTemplateNotFoundException;
 import com.epam.digital.data.platform.notification.service.EmailNotificationService;
 import com.epam.digital.data.platform.notification.service.UserSettingsService;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
+import com.epam.digital.data.platform.settings.model.dto.ChannelReadDto;
 import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
 import com.epam.digital.data.platform.starter.audit.model.Step;
+
+import java.util.Collections;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,8 +61,68 @@ public class NotificationFacadeTest {
 
   @BeforeEach
   void setup() {
-    notificationFacade = new NotificationFacade(userSettingsService,
-        Map.of("email", emailNotificationService), notificationAuditFacade);
+    notificationFacade =
+        new NotificationFacade(
+            userSettingsService,
+            Map.of(Channel.EMAIL, emailNotificationService),
+            notificationAuditFacade);
+  }
+
+  @Test
+  void shouldNotNotifyInactiveChannel() {
+    var recipient = "recipient";
+    var record = NotificationRecordDto.builder()
+            .notification(NotificationDto.builder().recipient(recipient).build())
+            .build();
+    var settingsReadDto = new SettingsReadDto();
+    var emailChannel = new ChannelReadDto();
+    emailChannel.setChannel(Channel.EMAIL);
+    emailChannel.setActivated(false);
+    emailChannel.setAddress("address");
+    settingsReadDto.setChannels(Collections.singletonList(emailChannel));
+    when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
+
+    notificationFacade.sendNotification(record);
+
+    verifyNoInteractions(emailNotificationService);
+  }
+
+  @Test
+  void shouldNotifyActiveValidChannel() {
+    var recipient = "recipient";
+    var notification = NotificationDto.builder().recipient(recipient).build();
+    var record = NotificationRecordDto.builder()
+            .notification(NotificationDto.builder().recipient(recipient).build())
+            .build();
+    var settingsReadDto = new SettingsReadDto();
+    var emailChannel = new ChannelReadDto();
+    emailChannel.setChannel(Channel.EMAIL);
+    emailChannel.setActivated(true);
+    emailChannel.setAddress("address");
+    settingsReadDto.setChannels(Collections.singletonList(emailChannel));
+    when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
+
+    notificationFacade.sendNotification(record);
+
+    verify(emailNotificationService).notify(notification, emailChannel);
+  }
+
+  @Test
+  void shouldNotNotifyUnimplementedChannel() {
+    var recipient = "recipient";
+    var record = NotificationRecordDto.builder()
+            .notification(NotificationDto.builder().recipient(recipient).build())
+            .build();
+    var settingsReadDto = new SettingsReadDto();
+    var emailChannel = new ChannelReadDto();
+    emailChannel.setChannel(Channel.DIIA);
+    emailChannel.setActivated(true);
+    settingsReadDto.setChannels(Collections.singletonList(emailChannel));
+    when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
+
+    notificationFacade.sendNotification(record);
+
+    verifyNoInteractions(emailNotificationService);
   }
 
   @Test
@@ -96,15 +161,19 @@ public class NotificationFacadeTest {
         .notification(NotificationDto.builder().recipient(recipient).build())
         .build();
     var settingsReadDto = new SettingsReadDto();
-    settingsReadDto.setCommunicationAllowed(true);
+    var emailChannel = new ChannelReadDto();
+    emailChannel.setChannel(Channel.EMAIL);
+    emailChannel.setActivated(true);
+    emailChannel.setAddress("address");
+    settingsReadDto.setChannels(Collections.singletonList(emailChannel));
     when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
     doThrow(new NotificationTemplateNotFoundException("template-id"))
-        .when(emailNotificationService).notify(notification, settingsReadDto);
+        .when(emailNotificationService).notify(notification, emailChannel);
 
     var exception = assertThrows(NotificationException.class,
         () -> notificationFacade.sendNotification(record));
 
-    verify(notificationAuditFacade, times(1)).sendAuditOnFailure("email", notification, Step.AFTER,
-        exception.getMessage());
+    verify(notificationAuditFacade, times(1))
+        .sendAuditOnFailure(Channel.EMAIL, notification, Step.AFTER, exception.getMessage());
   }
 }

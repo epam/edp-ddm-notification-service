@@ -1,7 +1,7 @@
 notifications:
   enabled: false
 
-user-settings-service-api:
+user-settings-service:
   url: http://localhost:8300
 
 keycloak:

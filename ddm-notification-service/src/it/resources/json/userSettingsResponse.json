@@ -1,5 +1,10 @@
 {
-  "settings_id": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
-  "e-mail": "test@test.com",
-  "communicationIsAllowed": true
+  "settingsId": "3fa85f64-5717-4562-b3fc-2c963f66afa6",
+  "channels": [
+    {
+      "channel": "email",
+      "activated": true,
+      "address": "test@test.com"
+    }
+  ]
 }

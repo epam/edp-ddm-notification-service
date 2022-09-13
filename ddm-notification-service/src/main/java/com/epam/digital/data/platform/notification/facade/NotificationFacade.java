@@ -19,18 +19,21 @@ package com.epam.digital.data.platform.notification.facade;
 import com.epam.digital.data.platform.notification.audit.NotificationAuditFacade;
 import com.epam.digital.data.platform.notification.dto.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.NotificationRecordDto;
-import com.epam.digital.data.platform.notification.enums.NotificationChannel;
 import com.epam.digital.data.platform.notification.exception.NotificationException;
 import com.epam.digital.data.platform.notification.service.NotificationService;
 import com.epam.digital.data.platform.notification.service.UserSettingsService;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
+import com.epam.digital.data.platform.settings.model.dto.ChannelReadDto;
 import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
 import com.epam.digital.data.platform.starter.audit.model.Step;
-import java.util.Collections;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import java.util.stream.Collectors;
 
 /**
  * The notification facade that responsible for sending notification to user
@@ -39,8 +42,10 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class NotificationFacade {
 
+  private static final EnumSet<Channel> IMPLEMENTED_CHANNELS = EnumSet.of(Channel.EMAIL);
+
   private final UserSettingsService userSettingsService;
-  private final Map<String, NotificationService> notificationServiceMap;
+  private final Map<Channel, NotificationService> notificationServiceMap;
   private final NotificationAuditFacade auditFacade;
 
   /**
@@ -59,28 +64,34 @@ public class NotificationFacade {
     log.info("Notification process finished");
   }
 
-  private void notify(List<String> channels, NotificationDto notification,
+  private void notify(List<Channel> channelsToNotify, NotificationDto notification,
       SettingsReadDto userSettings) {
-    channels.forEach(channel -> send(channel, notification, userSettings));
+    var userChannels = userSettings.getChannels()
+                    .stream().filter(userChannel -> channelsToNotify.contains(userChannel.getChannel()))
+                    .collect(Collectors.toList());
+    userChannels.forEach(channel -> send(notification, channel));
   }
 
-  private List<String> getChannels(SettingsReadDto userSettings) {
-    if (!userSettings.isCommunicationAllowed()) {
-      log.info("Communication is not allowed");
-      return Collections.emptyList();
-    }
-    var result = List.of(NotificationChannel.EMAIL.getName());
+  private List<Channel> getChannels(SettingsReadDto userSettings) {
+    var result =
+        userSettings.getChannels().stream()
+            .filter(
+                channelDto ->
+                    IMPLEMENTED_CHANNELS.contains(channelDto.getChannel())
+                        && channelDto.isActivated())
+            .map(ChannelReadDto::getChannel)
+            .collect(Collectors.toList());
     log.info("Allowed communication channels {}", result);
     return result;
   }
 
-  private void send(String channel, NotificationDto notification, SettingsReadDto userSettings) {
+  private void send(NotificationDto notification, ChannelReadDto userChannel) {
     try {
-      var notificationService = notificationServiceMap.get(channel);
-      notificationService.notify(notification, userSettings);
-      auditFacade.sendAuditOnSuccess(channel, notification);
+      var notificationService = notificationServiceMap.get(userChannel.getChannel());
+      notificationService.notify(notification, userChannel);
+      auditFacade.sendAuditOnSuccess(userChannel.getChannel(), notification);
     } catch (RuntimeException exception) {
-      auditFacade.sendAuditOnFailure(channel, notification, Step.AFTER, exception.getMessage());
+      auditFacade.sendAuditOnFailure(userChannel.getChannel(), notification, Step.AFTER, exception.getMessage());
       throw new NotificationException(exception.getMessage(), exception);
     }
   }

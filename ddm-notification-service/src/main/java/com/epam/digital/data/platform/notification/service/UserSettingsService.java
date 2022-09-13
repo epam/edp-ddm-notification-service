@@ -51,7 +51,7 @@ public class UserSettingsService {
     }
     var user = users.get(0);
     var accessToken = systemIdmService.getClientAccessToken();
-    var result = userSettingsFeignClient.performGetByKeycloakId(UUID.fromString(user.getId()),
+    var result = userSettingsFeignClient.performGetByUserId(UUID.fromString(user.getId()),
         createHeaders(accessToken));
     if (Objects.nonNull(result)) {
       log.info("Found user settings");

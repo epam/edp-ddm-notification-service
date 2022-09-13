@@ -47,7 +47,7 @@ public class WireMockContextInitializer implements
     });
 
     TestPropertyValues
-        .of(String.format("user-settings-service-api.url=http://localhost:%s",
+        .of(String.format("user-settings-service.url=http://localhost:%s",
                 userSettingsWireMock.port()),
             String.format("keycloak.url=http://localhost:%s", keycloakWireMock.port()))
         .applyTo(applicationContext);
