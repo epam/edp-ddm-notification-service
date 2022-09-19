@@ -16,6 +16,8 @@ nameOverride: ""
 fullnameOverride: ""
 framework: java11
 
+deployProfile: prod
+
 serviceAccount:
   # Specifies whether a service account should be created
   create: true
