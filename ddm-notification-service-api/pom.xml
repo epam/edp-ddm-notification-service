@@ -13,8 +13,29 @@
 
   <properties>
     <sonar.coverage.exclusions>
-      **/digital/data/platform/notification/dto/**/*
+      **/digital/data/platform/notification/**/*
     </sonar.coverage.exclusions>
   </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-openfeign</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-jpa</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.epam.digital.data.platform</groupId>
+      <artifactId>user-settings-model</artifactId>
+      <version>${settings.model.version}</version>
+    </dependency>
+  </dependencies>
 
 </project>

@@ -16,8 +16,8 @@
 
 package com.epam.digital.data.platform.notification.listener;
 
-import com.epam.digital.data.platform.notification.dto.NotificationRecordDto;
-import com.epam.digital.data.platform.notification.facade.NotificationFacade;
+import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
+import com.epam.digital.data.platform.notification.facade.UserNotificationFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -25,16 +25,15 @@ import org.springframework.kafka.annotation.KafkaListener;
 @Slf4j
 @RequiredArgsConstructor
 public class NotificationListener {
-
-  private final NotificationFacade notificationFacade;
+  private final UserNotificationFacade userNotificationFacade;
 
   @KafkaListener(
       topics = "\u0023{kafkaProperties.topics['user-notifications']}",
       groupId = "\u0023{kafkaProperties.consumer.groupId}",
       containerFactory = "concurrentKafkaListenerContainerFactory")
-  public void notify(NotificationRecordDto notificationRecord) {
+  public void notify(UserNotificationMessageDto userNotificationMessageDto) {
     log.info("Kafka event received");
-    notificationFacade.sendNotification(notificationRecord);
+    userNotificationFacade.sendNotification(userNotificationMessageDto);
     log.info("Kafka event processed");
   }
 }

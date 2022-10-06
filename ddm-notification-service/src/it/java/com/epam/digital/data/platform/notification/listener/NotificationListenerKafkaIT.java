@@ -27,21 +27,24 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.epam.digital.data.platform.notification.BaseKafkaIT;
-import com.epam.digital.data.platform.notification.audit.NotificationAuditFacade;
 import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
-import com.epam.digital.data.platform.notification.dto.NotificationDto;
-import com.epam.digital.data.platform.notification.dto.NotificationRecordDto;
-import com.epam.digital.data.platform.notification.repository.NotificationTemplateRepository;
+import com.epam.digital.data.platform.notification.dto.Recipient;
+import com.epam.digital.data.platform.notification.dto.UserNotificationDto;
+import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
+import com.epam.digital.data.platform.notification.dto.email.EmailNotificationMessageDto;
+import com.epam.digital.data.platform.notification.email.audit.EmailNotificationAuditFacade;
+import com.epam.digital.data.platform.notification.email.listener.EmailNotificationListener;
+import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.util.GreenMailUtil;
+import java.util.List;
 import java.util.Map;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.awaitility.Durations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.SpyBean;
@@ -59,10 +62,9 @@ class NotificationListenerKafkaIT extends BaseKafkaIT {
   @SpyBean
   private NotificationListener listener;
   @SpyBean
-  private NotificationAuditFacade auditFacade;
-
-  @Captor
-  private ArgumentCaptor<NotificationRecordDto> recordCaptor;
+  private EmailNotificationListener emailNotificationListener;
+  @SpyBean
+  private EmailNotificationAuditFacade emailNotificationAuditFacade;
 
   @BeforeEach
   void setup() {
@@ -80,19 +82,29 @@ class NotificationListenerKafkaIT extends BaseKafkaIT {
   }
 
   @Test
-  void shouldReceiveNotificationRecord() {
+  void testEmailNotification() {
+    var userNotificationMessageCaptor = ArgumentCaptor.forClass(UserNotificationMessageDto.class);
+    var emailNotificationMessageCaptor = ArgumentCaptor.forClass(EmailNotificationMessageDto.class);
     createEmailTemplateInDb("template-id", "<html>Hello ${name}!</html>");
     stubUserSettings("3fa85f64-1234-4562-b3fc-2c963f66afa6", "/json/userSettingsResponse.json");
-    var notificationRecord = createNotificationRecord();
+    var userNotificationMessageDto = createMessage();
     var topic = kafkaProperties.getTopics().get("user-notifications");
 
-    kafkaTemplate.send(topic, notificationRecord);
+    kafkaTemplate.send(topic, userNotificationMessageDto);
 
     await().atMost(Durations.TEN_SECONDS).untilAsserted(() -> {
-      verify(listener, times(1)).notify(recordCaptor.capture());
-      var record = recordCaptor.getValue();
-      assertThat(record).isNotNull();
-      assertThat(record).isEqualTo(notificationRecord);
+      verify(listener, times(1)).notify(userNotificationMessageCaptor.capture());
+      var userNotificationMessage = userNotificationMessageCaptor.getValue();
+      assertThat(userNotificationMessage).isNotNull();
+      assertThat(userNotificationMessage).isEqualTo(userNotificationMessageCaptor.getValue());
+
+      verify(emailNotificationListener, times(1)).notify(emailNotificationMessageCaptor.capture());
+      var emailNotificationMessage = emailNotificationMessageCaptor.getValue();
+      assertThat(emailNotificationMessage).isNotNull();
+      assertThat(emailNotificationMessage.getNotification().getMessage()).isNotNull();
+      assertThat(emailNotificationMessage.getNotification().getSubject()).isEqualTo("sign notification");
+      assertThat(emailNotificationMessage.getRecipient().getId()).isEqualTo("testuser");
+      assertThat(emailNotificationMessage.getRecipient().getEmail()).isEqualTo("test@test.com");
 
       var receivedMessages = greenMail.getReceivedMessages();
       AssertionsForClassTypes.assertThat(receivedMessages).isNotEmpty();
@@ -104,13 +116,13 @@ class NotificationListenerKafkaIT extends BaseKafkaIT {
       AssertionsForClassTypes.assertThat(receivedMessage.getAllRecipients()[0].toString())
           .isEqualTo("test@test.com");
 
-      verify(auditFacade, times(1)).sendAuditOnSuccess(Channel.EMAIL,
-          notificationRecord.getNotification());
+      verify(emailNotificationAuditFacade, times(1)).sendAuditOnSuccess(Channel.EMAIL,
+          emailNotificationMessage);
     });
   }
 
-  private NotificationRecordDto createNotificationRecord() {
-    return NotificationRecordDto.builder()
+  private UserNotificationMessageDto createMessage() {
+    return UserNotificationMessageDto.builder()
         .context(NotificationContextDto.builder()
             .system("ddm-platform")
             .application("bpms")
@@ -120,12 +132,16 @@ class NotificationListenerKafkaIT extends BaseKafkaIT {
             .businessProcessDefinitionId("add-lab:5:ac2dfa60-bbe2-11ec-8421-0a58")
             .businessProcessInstanceId("e2503352-bcb2-11ec-b217-0a580a831054")
             .build())
-        .notification(NotificationDto.builder()
-            .recipient("testuser")
-            .subject("sign notification")
-            .template("template-id")
-            .templateModel(Map.of("name", "John"))
+        .notification(UserNotificationDto.builder()
+            .title("sign notification")
+            .ignoreChannelPreferences(false)
+            .templateName("template-id")
             .build())
+        .recipients(List.of(
+            Recipient.builder()
+                .id("testuser")
+                .parameters(Map.of("name", "John"))
+                .build()))
         .build();
   }
 

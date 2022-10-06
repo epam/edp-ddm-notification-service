@@ -29,13 +29,17 @@
     </dependency>
     <dependency>
       <groupId>com.epam.digital.data.platform</groupId>
+      <artifactId>ddm-notification-service-email</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.epam.digital.data.platform</groupId>
       <artifactId>ddm-starter-actuator</artifactId>
       <version>${ddm-starter-actuator.version}</version>
     </dependency>
     <dependency>
       <groupId>com.epam.digital.data.platform</groupId>
       <artifactId>ddm-starter-logger</artifactId>
-      <version>${ddm-starter-logger.version}</version>
     </dependency>
     <dependency>
       <groupId>com.epam.digital.data.platform</groupId>
@@ -92,19 +96,10 @@
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-data-jpa</artifactId>
     </dependency>
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter-mail</artifactId>
-    </dependency>
 
     <dependency>
       <groupId>org.postgresql</groupId>
       <artifactId>postgresql</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.freemarker</groupId>
-      <artifactId>freemarker</artifactId>
-      <version>${freemarker.version}</version>
     </dependency>
 
     <dependency>
