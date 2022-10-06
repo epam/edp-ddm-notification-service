@@ -11,6 +11,7 @@ data-platform:
       value-deserializer: org.springframework.kafka.support.serializer.ErrorHandlingDeserializer
       trusted-packages:
         - com.epam.digital.data.platform.notification.dto
+        - com.epam.digital.data.platform.notification.dto.email
       error-handler:
         enabled-dlq: true
       custom-config:
@@ -22,6 +23,7 @@ data-platform:
       enabled: true
     topics:
       user-notifications: user-notifications
+      email-notifications: email-notifications
     topic-properties:
       creation:
         enabled: true
@@ -57,7 +59,7 @@ management:
         liveness:
           include: livenessState
         readiness:
-          include: readinessState
+          include: readinessState, db, webServices
     loggers:
       enabled: true
     prometheus:
@@ -71,3 +73,12 @@ management:
       enabled: false
     kubernetes:
       enabled: false
+    webservices:
+      readiness:
+        services:
+          - ${user-settings-service.url}/actuator/health
+          - ${keycloak.url}
+
+recipients-processing:
+  recipients-max-thread-pool-size: 10
+  channels-max-thread-pool-size: 5

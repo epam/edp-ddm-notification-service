@@ -19,8 +19,8 @@ package com.epam.digital.data.platform.notification.listener;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.epam.digital.data.platform.notification.dto.NotificationRecordDto;
-import com.epam.digital.data.platform.notification.facade.NotificationFacade;
+import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
+import com.epam.digital.data.platform.notification.facade.UserNotificationFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,13 +31,13 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class NotificationListenerTest {
 
   @Mock
-  private NotificationFacade notificationFacade;
+  private UserNotificationFacade notificationFacade;
   @InjectMocks
   private NotificationListener listener;
 
   @Test
   void test() {
-    var record = NotificationRecordDto.builder().build();
+    var record = UserNotificationMessageDto.builder().build();
 
     listener.notify(record);
 

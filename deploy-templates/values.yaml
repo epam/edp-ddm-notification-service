@@ -122,6 +122,11 @@ keycloak:
     realm: citizen-portal
     public: false
     secretName: keycloak-realm-admin-citizen-client-secret
+  realms:
+    officer: officer-portal
+    citizen: citizen-portal
+    admin: admin
+  certificatesEndpoint: /protocol/openid-connect/certs
 
 audit:
   kafka:
