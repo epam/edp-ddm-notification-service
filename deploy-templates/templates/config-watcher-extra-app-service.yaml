@@ -1,3 +1,4 @@
+{{- if or (not .Values.global.excludePortals) (not (has "citizen" .Values.global.excludePortals)) }}
 {{- if .Values.configWatcher.deploy -}}
 apiVersion: v1
 kind: Service
@@ -14,4 +15,5 @@ spec:
       name: http
   selector:
     {{- include "ddm-notification-service.selectorLabels" . | nindent 4 }}
+{{- end }}
 {{- end }}

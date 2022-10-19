@@ -1,4 +1,5 @@
 {{- if .Values.global.notifications.email }}
+{{- if or (not .Values.global.excludePortals) (not (has "citizen" .Values.global.excludePortals)) }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -25,4 +26,5 @@ data:
               auth: true
               starttls:
                 enable: true
+{{- end }}
 {{- end }}
