@@ -1,3 +1,4 @@
+{{- if or (not .Values.global.excludePortals) (not (has "citizen" .Values.global.excludePortals)) }}
 {{- if .Values.configWatcher.deploy -}}
 apiVersion: apps/v1
 kind: Deployment
@@ -51,4 +52,5 @@ spec:
       tolerations:
         {{- toYaml . | nindent 8 }}
       {{- end }}
+{{- end }}
 {{- end }}

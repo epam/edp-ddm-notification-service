@@ -1,3 +1,4 @@
+{{- if or (not .Values.global.excludePortals) (not (has "citizen" .Values.global.excludePortals)) }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -13,3 +14,4 @@ spec:
       name: http
   selector:
     {{- include "ddm-notification-service.selectorLabels" . | nindent 4 }}
+{{- end }}
