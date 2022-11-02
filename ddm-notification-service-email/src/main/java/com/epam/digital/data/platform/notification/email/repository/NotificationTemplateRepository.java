@@ -28,5 +28,4 @@ public interface NotificationTemplateRepository extends JpaRepository<Notificati
 
   Optional<NotificationTemplate> findByNameAndChannel(String name, String channel);
 
-  Optional<NotificationTemplate> findByName(String name);
 }

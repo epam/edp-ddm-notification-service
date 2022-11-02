@@ -58,7 +58,7 @@ public class EmailNotificationTemplateService implements NotificationTemplateSer
   }
 
   private NotificationTemplate getTemplateByName(String templateName) {
-    return repository.findByName(templateName)
+    return repository.findByNameAndChannel(templateName, Channel.EMAIL.getValue())
         .orElseThrow(() -> new NotificationTemplateNotFoundException(templateName));
   }
 }

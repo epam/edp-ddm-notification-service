@@ -28,12 +28,12 @@ import com.epam.digital.data.platform.notification.util.MDCWrappedCallable;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
 import com.epam.digital.data.platform.starter.audit.model.Step;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Consumer;
@@ -42,7 +42,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.MDC;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.util.CollectionUtils;
 
@@ -77,7 +76,10 @@ public class UserNotificationFacade {
   private void notifyEachRecipient(boolean ignorePref, UserNotificationMessageDto message) {
     verifyNotification(message);
     parallelExecution(recipientsMaxThreadPoolSize, message.getRecipients(), recipient -> {
-      var channels = getChannels(ignorePref, recipient, recipient.getChannels(), message);
+      List<Channel> channels = getDefaultChannels();
+      channels.addAll(getChannels(ignorePref, recipient, recipient.getChannels(), message));
+      log.info("Allowed communication channels {}", channels);
+
       parallelExecution(channelsMaxThreadPoolSize, channels,
           channel -> sendNotification(channel, recipient, message));
     });
@@ -115,11 +117,10 @@ public class UserNotificationFacade {
             .map(c -> channelMapperMap.get(c.getChannel()).map(c))
             .collect(Collectors.toList());
     recipient.setChannels(channelObjects);
-    var result = channelObjects.stream()
+
+    return channelObjects.stream()
         .map(c -> Channel.valueOf(c.getChannel().toUpperCase()))
         .collect(Collectors.toList());
-    log.info("Allowed communication channels {}", result);
-    return result;
   }
 
   private List<Channel> getChannels(boolean ignoreChannelPreferences, Recipient recipient,
@@ -130,6 +131,10 @@ public class UserNotificationFacade {
           .collect(Collectors.toList());
     }
     return this.getChannelsFromSettings(recipient, notificationRecord);
+  }
+
+  private List<Channel> getDefaultChannels() {
+    return new ArrayList<>(List.of(Channel.INBOX));
   }
 
   private boolean isIgnoreChannelPreferences(UserNotificationMessageDto notificationRecord) {
@@ -169,10 +174,9 @@ public class UserNotificationFacade {
   private <T> T getFuture(Future<T> future) {
     try {
       return future.get();
-    } catch (ExecutionException e) {
-      throw new NotificationException(e.getCause().getMessage());
-    } catch (InterruptedException e) {
-      throw new NotificationException(e.getMessage());
+    } catch (Exception e) {
+      log.error("Error during sending notifications.", e);
+      return null;
     }
   }
 }

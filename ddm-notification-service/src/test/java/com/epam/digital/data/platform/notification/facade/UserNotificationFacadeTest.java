@@ -34,11 +34,14 @@ import com.epam.digital.data.platform.notification.exception.NotificationExcepti
 import com.epam.digital.data.platform.notification.exception.NotificationTemplateNotFoundException;
 import com.epam.digital.data.platform.notification.email.producer.EmailNotificationProducer;
 import com.epam.digital.data.platform.notification.email.mapper.EmailChannelMapper;
+import com.epam.digital.data.platform.notification.inbox.mapper.InboxChannelMapper;
+import com.epam.digital.data.platform.notification.inbox.producer.InboxNotificationProducer;
 import com.epam.digital.data.platform.notification.service.UserSettingsService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.settings.model.dto.ChannelReadDto;
 import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
 import com.epam.digital.data.platform.starter.audit.model.Step;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -56,6 +59,8 @@ public class UserNotificationFacadeTest {
   @Mock
   private EmailNotificationProducer emailNotificationProducer;
   @Mock
+  private InboxNotificationProducer inboxNotificationProducer;
+  @Mock
   private UserNotificationAuditFacade notificationAuditFacade;
   private UserNotificationFacade notificationFacade;
 
@@ -65,8 +70,10 @@ public class UserNotificationFacadeTest {
         new UserNotificationFacade(
             userSettingsService,
             notificationAuditFacade,
-            Map.of(Channel.EMAIL, emailNotificationProducer),
-            Map.of(Channel.EMAIL, new EmailChannelMapper()));
+            Map.of(Channel.EMAIL, emailNotificationProducer,
+                Channel.INBOX, inboxNotificationProducer),
+            Map.of(Channel.EMAIL, new EmailChannelMapper(),
+                Channel.INBOX, new InboxChannelMapper()));
     notificationFacade.setRecipientsMaxThreadPoolSize(10);
     notificationFacade.setChannelsMaxThreadPoolSize(5);
   }
@@ -123,7 +130,7 @@ public class UserNotificationFacadeTest {
     var emailChannel = new ChannelReadDto();
     emailChannel.setChannel(Channel.DIIA);
     emailChannel.setActivated(true);
-    settingsReadDto.setChannels(Collections.singletonList(emailChannel));
+    settingsReadDto.setChannels(new ArrayList<>(Collections.singletonList(emailChannel)));
     when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
 
     notificationFacade.sendNotification(message);
@@ -152,8 +159,7 @@ public class UserNotificationFacadeTest {
         .build();
     when(userSettingsService.getByUsername(recipient)).thenThrow(IllegalArgumentException.class);
 
-    assertThrows(NotificationException.class,
-        () -> notificationFacade.sendNotification(message));
+    notificationFacade.sendNotification(message);
 
     verify(notificationAuditFacade, times(1)).sendAuditOnFailure(any(), eq(message),
         eq(Step.BEFORE), any());
@@ -179,10 +185,10 @@ public class UserNotificationFacadeTest {
     doThrow(new NotificationTemplateNotFoundException("template-id"))
         .when(emailNotificationProducer).send(recipientDto, message);
 
-    var exception = assertThrows(NotificationException.class,
-        () -> notificationFacade.sendNotification(message));
+    notificationFacade.sendNotification(message);
 
     verify(notificationAuditFacade, times(1))
-        .sendAuditOnFailure(Channel.EMAIL, message, Step.AFTER, exception.getMessage());
+        .sendAuditOnFailure(Channel.EMAIL, message, Step.AFTER,
+            "Notification template template-id not found");
   }
 }

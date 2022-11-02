@@ -31,13 +31,15 @@ public class TemplatePublishingConfig {
   @Bean(name = "notification-template-publisher-map")
   public Map<Channel, SaveNotificationTemplateService> notificationServiceMap(
       SaveDefaultNotificationTemplateService defaultNotificationTemplateService) {
-    return Map.of(Channel.EMAIL, defaultNotificationTemplateService);
+    return Map.of(
+        Channel.EMAIL, defaultNotificationTemplateService,
+        Channel.INBOX, defaultNotificationTemplateService);
   }
 
   @Bean
   public NotificationTemplateFacade notificationTemplateFacade(
       @Qualifier("notification-template-publisher-map")
-          Map<Channel, SaveNotificationTemplateService> notificationTemplatesMap) {
+      Map<Channel, SaveNotificationTemplateService> notificationTemplatesMap) {
     return new NotificationTemplateFacade(notificationTemplatesMap);
   }
 }
