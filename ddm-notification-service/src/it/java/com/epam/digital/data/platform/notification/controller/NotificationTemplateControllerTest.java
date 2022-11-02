@@ -37,6 +37,8 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.jetty.http.HttpStatus;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -50,7 +52,7 @@ import org.springframework.util.ResourceUtils;
 @ActiveProfiles("test")
 @Transactional
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
-        "notifications.enabled=false"
+    "notifications.enabled=false"
 })
 class NotificationTemplateControllerTest {
 
@@ -69,8 +71,9 @@ class NotificationTemplateControllerTest {
     TOKEN = FileUtils.readFileToString(ResourceUtils.getFile("classpath:token.txt"));
   }
 
-  @Test
-  void shouldSaveTemplate() throws Exception {
+  @ParameterizedTest
+  @ValueSource(strings = {"email", "inbox"})
+  void shouldSaveTemplate(String channel) throws Exception {
     var title = "Title";
     var content = "<html><h1>Hello</h1></html>";
     var inputDto = new SaveNotificationTemplateInputDto();
@@ -80,7 +83,7 @@ class NotificationTemplateControllerTest {
         Collections.singletonList(new NotificationTemplateAttributeDto("name", "value")));
     mockMvc
         .perform(
-            put(BASE_URL + "/email:template")
+            put(BASE_URL + String.format("/%s:template", channel))
                 .header("X-Access-Token", TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputDto)))
@@ -88,7 +91,7 @@ class NotificationTemplateControllerTest {
             status().isOk(),
             content().contentType(MediaType.APPLICATION_JSON),
             jsonPath("$.name", is("template")),
-            jsonPath("$.channel", is("email")),
+            jsonPath("$.channel", is(channel)),
             jsonPath("$.title", is(title)),
             jsonPath("$.content", is(content)),
             jsonPath("$.checksum", is(DigestUtils.sha256Hex(content))),
@@ -99,7 +102,7 @@ class NotificationTemplateControllerTest {
             jsonPath("$.externalTemplateId", nullValue()),
             jsonPath("$.externallyPublishedAt", nullValue()));
 
-    var dbContent = notificationTemplateRepository.findByNameAndChannel("template", "email");
+    var dbContent = notificationTemplateRepository.findByNameAndChannel("template", channel);
     assertThat(dbContent).isNotEmpty();
   }
 
@@ -112,7 +115,7 @@ class NotificationTemplateControllerTest {
     inputDto.setContent(content);
     mockMvc
         .perform(
-            put(BASE_URL + "/inbox:template")
+            put(BASE_URL + "/test:template")
                 .header("X-Access-Token", TOKEN)
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(inputDto)))

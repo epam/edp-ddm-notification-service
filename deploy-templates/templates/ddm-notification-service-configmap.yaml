@@ -5,6 +5,8 @@ metadata:
   name: {{ .Chart.Name }}
 data:
   application.yaml: |-
+    server:
+      max-http-header-size: 32KB
     {{- if eq .Values.deployProfile "dev" }}
     management.endpoints.web.exposure.include: '*'
     {{- else }}

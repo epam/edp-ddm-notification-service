@@ -18,6 +18,7 @@
 		<module>ddm-notification-service</module>
 		<module>ddm-notification-service-api</module>
     <module>ddm-notification-service-email</module>
+    <module>ddm-notification-service-inbox</module>
   </modules>
 
 	<properties>
@@ -33,7 +34,10 @@
 		<freemarker.version>2.3.31</freemarker.version>
 		<awaitility.version>4.0.2</awaitility.version>
 		<bpms.api.version>1.6.0.1</bpms.api.version>
-		<settings.model.version>1.8.0.1</settings.model.version>
+		<settings.model.version>1.8.0.4</settings.model.version>
+		<junit.jupiter.version>5.9.0</junit.jupiter.version>
+		<nimbus-jose-jwt.version>9.25.6</nimbus-jose-jwt.version>
+		<apache.commons.version>3.12.0</apache.commons.version>
 	</properties>
 
 	<dependencyManagement>
@@ -55,7 +59,6 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.projectlombok</groupId>

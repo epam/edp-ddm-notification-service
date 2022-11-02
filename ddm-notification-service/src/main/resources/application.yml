@@ -12,6 +12,7 @@ data-platform:
       trusted-packages:
         - com.epam.digital.data.platform.notification.dto
         - com.epam.digital.data.platform.notification.dto.email
+        - com.epam.digital.data.platform.notification.dto.inbox
       error-handler:
         enabled-dlq: true
       custom-config:
@@ -24,6 +25,7 @@ data-platform:
     topics:
       user-notifications: user-notifications
       email-notifications: email-notifications
+      inbox-notifications: inbox-notifications
     topic-properties:
       creation:
         enabled: true

@@ -16,7 +16,7 @@
 
 package com.epam.digital.data.platform.notification.exception;
 
-import com.epam.digital.data.platform.notification.exception.model.DetailedErrorResponse;
+import com.epam.digital.data.platform.notification.model.DetailedErrorResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;

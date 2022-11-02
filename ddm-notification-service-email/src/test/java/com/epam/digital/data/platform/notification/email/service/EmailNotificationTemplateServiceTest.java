@@ -22,6 +22,7 @@ import static org.mockito.Mockito.when;
 
 import com.epam.digital.data.platform.notification.exception.NotificationTemplateNotFoundException;
 import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -46,7 +47,8 @@ class EmailNotificationTemplateServiceTest {
   void shouldThrowNotFoundException() {
     var name = "invalid-name";
 
-    when(repository.findByName(name)).thenReturn(Optional.empty());
+    when(repository.findByNameAndChannel(name, Channel.EMAIL.getValue()))
+        .thenReturn(Optional.empty());
 
     var exception = assertThrows(NotificationTemplateNotFoundException.class,
         () -> service.getByName(name));
