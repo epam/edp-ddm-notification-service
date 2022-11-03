@@ -1,5 +1,9 @@
 notifications:
   enabled: false
+  diia:
+    url: localhost:5000
+    partner:
+      token: partnerToken
 
 user-settings-service:
   url: http://localhost:8300
@@ -16,5 +20,19 @@ audit:
     bootstrap: localhost:9092
     topic: audit-events
     schema-registry-url: http://localhost:8081
+    ssl:
+      enabled: false
+      
+data-platform:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/notifications
+    username: postgres
+    password: postgres
+  kafka:
+    bootstrap: localhost:9092
+    topic-properties:
+      creation:
+        num-partitions: 1
+        replication-factor: 1
     ssl:
       enabled: false

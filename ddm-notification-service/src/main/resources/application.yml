@@ -13,6 +13,7 @@ data-platform:
         - com.epam.digital.data.platform.notification.dto
         - com.epam.digital.data.platform.notification.dto.email
         - com.epam.digital.data.platform.notification.dto.inbox
+        - com.epam.digital.data.platform.notification.dto.diia
       error-handler:
         enabled-dlq: true
       custom-config:
@@ -26,6 +27,7 @@ data-platform:
       user-notifications: user-notifications
       email-notifications: email-notifications
       inbox-notifications: inbox-notifications
+      diia-notifications: diia-notifications
     topic-properties:
       creation:
         enabled: true
