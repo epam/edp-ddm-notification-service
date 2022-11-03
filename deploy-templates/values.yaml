@@ -86,6 +86,8 @@ secretsMountPath: "/app/secrets/main"
 dbSecretMountPath: "/app/secrets/db"
 smtpSecretMountPath: "/app/secrets/smtp"
 smtpConfigMapMountPath: "/app/config/smtp"
+diiaSecretMountPath: "/app/secrets/diia"
+diiaConfigMapMountPath: "/app/config/diia"
 
 global:
   kafkaOperator:
@@ -97,6 +99,10 @@ global:
       password: secure
       host: smtp.mail.com
       port: 587
+    diia:
+      url: https://mock.diia.ua/
+      partner:
+        token: mock
 
 kafka:
   service: kafka-cluster-kafka-bootstrap:9093
@@ -136,6 +142,10 @@ audit:
 smtp:
   secretName: notification-service-channel-configuration
   configMapName: notification-service-channel-configuration
+
+diia:
+  secretName: notification-service-diia-channel-configuration
+  configMapName: notification-service-diia-channel-configuration
 
 userSettingsService:
   url: http://user-settings-service-api:8080

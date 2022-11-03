@@ -71,11 +71,6 @@ public class NotificationsConfig {
   }
 
   @Bean
-  public Clock clock() {
-    return Clock.systemDefaultZone();
-  }
-
-  @Bean
   public UserNotificationAuditFacade userNotificationAuditFacade(AuditService auditService,
       @Value("${spring.application.name}") String appName, Clock clock) {
     return new UserNotificationAuditFacade(auditService, appName, clock);

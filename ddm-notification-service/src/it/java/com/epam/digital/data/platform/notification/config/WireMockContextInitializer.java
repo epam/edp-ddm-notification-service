@@ -33,23 +33,28 @@ public class WireMockContextInitializer implements
     userSettingsWireMock.start();
     var keycloakWireMock = new WireMockServer(wireMockConfig().dynamicPort());
     keycloakWireMock.start();
+    var diiaWireMock = new WireMockServer(wireMockConfig().dynamicPort());
+    diiaWireMock.start();
 
     applicationContext.getBeanFactory()
         .registerSingleton("userSettingsWireMock", userSettingsWireMock);
     applicationContext.getBeanFactory()
         .registerSingleton("keycloakWireMock", keycloakWireMock);
+    applicationContext.getBeanFactory()
+        .registerSingleton("diiaWireMock", diiaWireMock);
 
     applicationContext.addApplicationListener(event -> {
       if (event instanceof ContextClosedEvent) {
         userSettingsWireMock.stop();
         keycloakWireMock.stop();
+        diiaWireMock.stop();
       }
     });
 
-    TestPropertyValues
-        .of(String.format("user-settings-service.url=http://localhost:%s",
-                userSettingsWireMock.port()),
-            String.format("keycloak.url=http://localhost:%s", keycloakWireMock.port()))
+    TestPropertyValues.of(
+        String.format("user-settings-service.url=http://localhost:%s", userSettingsWireMock.port()), 
+        String.format("keycloak.url=http://localhost:%s", keycloakWireMock.port()),
+        String.format("notifications.diia.url=http://localhost:%s", diiaWireMock.port()))
         .applyTo(applicationContext);
   }
 }

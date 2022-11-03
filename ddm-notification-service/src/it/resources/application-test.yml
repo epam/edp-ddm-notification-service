@@ -1,5 +1,9 @@
 notifications:
   enabled: true
+  diia:
+    url: localhost:5000
+    partner:
+      token: partnerToken
 
 data-platform:
   kafka:

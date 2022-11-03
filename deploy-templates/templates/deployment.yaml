@@ -19,6 +19,8 @@ spec:
         traffic.sidecar.istio.io/excludeOutboundPorts: '5432,8081,9093,587'
         checksum/smtp-configmap: {{ include (print $.Template.BasePath "/smtp-server-configmap.yaml") . | sha256sum }}
         checksum/smtp-secret: {{ include (print $.Template.BasePath "/smtp-server-secret.yaml") . | sha256sum }}
+        checksum/diia-configmap: {{ include (print $.Template.BasePath "/diia-configmap.yaml") . | sha256sum }}
+        checksum/diia-secret: {{ include (print $.Template.BasePath "/diia-secret.yaml") . | sha256sum }}
       {{- with .Values.podAnnotations }}
           {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -88,6 +90,10 @@ spec:
               name: {{ .Values.smtp.secretName }}-secret
             - mountPath: {{ .Values.smtpConfigMapMountPath }}
               name: {{ .Values.smtp.configMapName }}-configmap
+            - mountPath: {{ .Values.diiaSecretMountPath }}
+              name: {{ .Values.diia.secretName }}-secret
+            - mountPath: {{ .Values.diiaConfigMapMountPath }}
+              name: {{ .Values.diia.configMapName }}-configmap
           ports:
             - name: http
               containerPort: 8080
@@ -111,6 +117,9 @@ spec:
         - name: {{ .Values.smtp.configMapName }}-configmap
           configMap:
             name: {{ .Values.smtp.configMapName }}
+        - name: {{ .Values.diia.configMapName }}-configmap
+          configMap:
+            name: {{ .Values.diia.configMapName }}
         - name: {{ .Values.db.secret }}
           secret:
             secretName: {{ .Values.db.secret }}
@@ -133,6 +142,12 @@ spec:
                 path: spring.mail.username
               - key: notifications.email.password
                 path: spring.mail.password
+        - name: {{ .Values.diia.secretName }}-secret
+          secret:
+            secretName: {{ .Values.diia.secretName }}
+            items:
+              - key: notifications.diia.partner.token
+                path: notifications.diia.partner.token              
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

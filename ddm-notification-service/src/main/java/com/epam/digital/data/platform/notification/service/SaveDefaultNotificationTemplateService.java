@@ -16,21 +16,11 @@
 
 package com.epam.digital.data.platform.notification.service;
 
-import com.epam.digital.data.platform.notification.dto.NotificationTemplateAttributeDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateOutputDto;
 import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
-import com.epam.digital.data.platform.notification.entity.NotificationTemplateAttribute;
 import com.epam.digital.data.platform.notification.repository.NotificationTemplateAttributeRepository;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -39,12 +29,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class SaveDefaultNotificationTemplateService
-    implements SaveNotificationTemplateService {
+    extends AbstractSaveNotificationTemplateService {
 
-  private final NotificationTemplateRepository notificationTemplateRepository;
-  private final NotificationTemplateAttributeRepository notificationTemplateAttributeRepository;
+  public SaveDefaultNotificationTemplateService(
+      NotificationTemplateRepository notificationTemplateRepository,
+      NotificationTemplateAttributeRepository notificationTemplateAttributeRepository) {
+    super(notificationTemplateRepository, notificationTemplateAttributeRepository);
+  }
 
   @Override
   @Transactional
@@ -54,30 +46,6 @@ public class SaveDefaultNotificationTemplateService
     var template = saveTemplate(channel, name, inputDto);
     var attributes = saveAttributes(template.getId(), inputDto);
     return buildOutputDtoFromDb(template, attributes);
-  }
-
-  private SaveNotificationTemplateOutputDto buildOutputDtoFromDb(
-      NotificationTemplate template, List<NotificationTemplateAttribute> attributes) {
-    return SaveNotificationTemplateOutputDto.builder()
-        .name(template.getName())
-        .channel(template.getChannel())
-        .title(template.getTitle())
-        .content(template.getContent())
-        .checksum(template.getChecksum())
-        .createdAt(template.getCreatedAt())
-        .updatedAt(template.getUpdatedAt())
-        .externalTemplateId(template.getExtTemplateId())
-        .externallyPublishedAt(template.getExtPublishedAt())
-        .attributes(
-            attributes.stream()
-                .map(
-                    attr ->
-                        NotificationTemplateAttributeDto.builder()
-                            .name(attr.getName())
-                            .value(attr.getValue())
-                            .build())
-                .collect(Collectors.toList()))
-        .build();
   }
 
   private NotificationTemplate buildTemplateFromInput(
@@ -97,7 +65,7 @@ public class SaveDefaultNotificationTemplateService
     if (templateOpt.isEmpty()) {
       log.info("Template does not exist, creating new");
       var newTemplate = buildTemplateFromInput(channel, name, inputDto);
-      notificationTemplateRepository.save(newTemplate);
+      return notificationTemplateRepository.save(newTemplate);
     } else {
       var template = templateOpt.get();
       var inputContentChecksum = DigestUtils.sha256Hex(inputDto.getContent());
@@ -110,45 +78,8 @@ public class SaveDefaultNotificationTemplateService
         template.setContent(inputDto.getContent());
         template.setChecksum(inputContentChecksum);
         template.setTitle(inputDto.getTitle());
-        notificationTemplateRepository.save(template);
+        return notificationTemplateRepository.save(template);
       }
     }
-    return notificationTemplateRepository.findByNameAndChannel(name, channel).orElse(null);
-  }
-
-  private List<NotificationTemplateAttribute> saveAttributes(UUID templateId, SaveNotificationTemplateInputDto inputDto) {
-    var existingAttributes =
-            notificationTemplateAttributeRepository.findByTemplateId(templateId).stream()
-                    .collect(
-                            Collectors.toMap(
-                                    NotificationTemplateAttribute::getName,
-                                    Function.identity()));
-    var newAttributes =
-            Optional.ofNullable(inputDto.getAttributes())
-                    .stream()
-                    .flatMap(Collection::stream)
-                    .collect(
-                            Collectors.toMap(
-                                    NotificationTemplateAttributeDto::getName,
-                                    NotificationTemplateAttributeDto::getValue,
-                                    (k1, k2) -> k2));
-    newAttributes.forEach((name, newValue) -> {
-      var existingAttrEntity = existingAttributes.get(name);
-      if (existingAttrEntity == null) {
-        var newAttr = new NotificationTemplateAttribute();
-        newAttr.setTemplateId(templateId);
-        newAttr.setName(name);
-        newAttr.setValue(newValue);
-        existingAttributes.put(name, notificationTemplateAttributeRepository.save(newAttr));
-      } else if (!newValue.equals(existingAttrEntity.getValue())) {
-        existingAttrEntity.setValue(newValue);
-        existingAttributes.put(name, notificationTemplateAttributeRepository.save(existingAttrEntity));
-      }
-    });
-    var outdatedAttributes = existingAttributes.values().stream()
-            .filter(attr -> newAttributes.get(attr.getName()) == null)
-            .collect(Collectors.toList());
-    notificationTemplateAttributeRepository.deleteAll(outdatedAttributes);
-    return new ArrayList<>(notificationTemplateAttributeRepository.findByTemplateId(templateId));
   }
 }

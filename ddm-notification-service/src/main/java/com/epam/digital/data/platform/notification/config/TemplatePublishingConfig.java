@@ -18,6 +18,7 @@ package com.epam.digital.data.platform.notification.config;
 
 import com.epam.digital.data.platform.notification.service.NotificationTemplateFacade;
 import com.epam.digital.data.platform.notification.service.SaveDefaultNotificationTemplateService;
+import com.epam.digital.data.platform.notification.service.SaveDiiaNotificationTemplateService;
 import com.epam.digital.data.platform.notification.service.SaveNotificationTemplateService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.Map;
@@ -30,10 +31,12 @@ public class TemplatePublishingConfig {
 
   @Bean(name = "notification-template-publisher-map")
   public Map<Channel, SaveNotificationTemplateService> notificationServiceMap(
-      SaveDefaultNotificationTemplateService defaultNotificationTemplateService) {
+      SaveDefaultNotificationTemplateService defaultNotificationTemplateService,
+      SaveDiiaNotificationTemplateService saveDiiaNotificationTemplateService) {
     return Map.of(
         Channel.EMAIL, defaultNotificationTemplateService,
-        Channel.INBOX, defaultNotificationTemplateService);
+        Channel.INBOX, defaultNotificationTemplateService,
+        Channel.DIIA, saveDiiaNotificationTemplateService);
   }
 
   @Bean
