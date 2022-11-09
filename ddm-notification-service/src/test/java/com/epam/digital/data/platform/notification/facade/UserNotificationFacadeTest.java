@@ -191,4 +191,20 @@ public class UserNotificationFacadeTest {
         .sendAuditOnFailure(Channel.EMAIL, message, Step.AFTER,
             "Notification template template-id not found");
   }
+
+  @Test
+  void shouldNotifyOnlyPassedChannelWithIgnorePreferences() {
+    var recipient = "recipient";
+    var channelObject = ChannelObject.builder().channel("email").build();
+    var recipientDto = Recipient.builder().id(recipient).channels(List.of(channelObject)).build();
+    var message = UserNotificationMessageDto.builder()
+        .notification(UserNotificationDto.builder().ignoreChannelPreferences(true).build())
+        .recipients(List.of(recipientDto))
+        .build();
+
+    notificationFacade.sendNotification(message);
+
+    verify(emailNotificationProducer).send(recipientDto, message);
+    verify(inboxNotificationProducer, times(0)).send(recipientDto, message);
+  }
 }

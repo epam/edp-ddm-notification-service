@@ -20,6 +20,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
 import com.epam.digital.data.platform.notification.dto.audit.DiiaNotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationDto;
@@ -28,6 +29,7 @@ import com.epam.digital.data.platform.notification.dto.diia.DiiaRecipientDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaRecipientDto.KeyValue;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.starter.audit.model.AuditEvent;
+import com.epam.digital.data.platform.starter.audit.model.AuditSourceInfo;
 import com.epam.digital.data.platform.starter.audit.model.Step;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
@@ -67,8 +69,8 @@ class DiiaNotificationAuditFacadeTest {
     assertThat(notificationAudit.getExternalTemplateId()).isEqualTo("externalTemplateId");
     assertThat(notificationAudit.getDistributionId()).isEqualTo("1000");
     assertThat(notificationAudit.getRecipient()).isEqualTo(recipient);
+    assertSourceInfo(auditEvent.getSourceInfo(), diiaNotificationMsg.getContext());
   }
-
 
   @Test
   void testAuditOnFailure() {
@@ -83,6 +85,7 @@ class DiiaNotificationAuditFacadeTest {
     var auditEvent = auditEventArgumentCaptor.getValue();
     var deliveryAuditDto = (DeliveryAuditDto) auditEvent.getContext().get("delivery");
     assertThat(deliveryAuditDto.getFailureReason()).isEqualTo("fail reason");
+    assertSourceInfo(auditEvent.getSourceInfo(), diiaNotificationMsg.getContext());
   }
 
   private DiiaNotificationMessageDto createMessage(DiiaRecipientDto recipient) {
@@ -92,6 +95,15 @@ class DiiaNotificationAuditFacadeTest {
             .templateName("templateName")
             .build())
         .recipient(recipient)
+        .context(NotificationContextDto.builder()
+            .businessActivity("activity")
+            .businessProcessDefinitionId("processDefinitionId")
+            .application("application")
+            .system("system")
+            .businessProcess("process")
+            .businessProcessInstanceId("piid")
+            .businessActivityInstanceId("activityId")
+            .build())
         .build();
   }
 
@@ -100,5 +112,22 @@ class DiiaNotificationAuditFacadeTest {
         .rnokpp("rnokpp")
         .parameters(List.of(new KeyValue("key", "value")))
         .build();
+  }
+
+  private void assertSourceInfo(AuditSourceInfo sourceInfo, NotificationContextDto contextDto) {
+    assertThat(sourceInfo.getApplication()).isEqualTo(
+        contextDto.getApplication());
+    assertThat(sourceInfo.getSystem()).isEqualTo(
+        contextDto.getSystem());
+    assertThat(sourceInfo.getBusinessProcessDefinitionId()).isEqualTo(
+        contextDto.getBusinessProcessDefinitionId());
+    assertThat(sourceInfo.getBusinessActivity()).isEqualTo(
+        contextDto.getBusinessActivity());
+    assertThat(sourceInfo.getBusinessProcess()).isEqualTo(
+        contextDto.getBusinessProcess());
+    assertThat(sourceInfo.getBusinessProcessInstanceId()).isEqualTo(
+        contextDto.getBusinessProcessInstanceId());
+    assertThat(sourceInfo.getBusinessActivityInstanceId()).isEqualTo(
+        contextDto.getBusinessActivityInstanceId());
   }
 }

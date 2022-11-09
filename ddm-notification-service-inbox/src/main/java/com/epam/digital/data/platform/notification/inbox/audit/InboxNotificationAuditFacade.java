@@ -16,12 +16,14 @@
 
 package com.epam.digital.data.platform.notification.inbox.audit;
 
+import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.audit.AuditResultDto;
 import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
 import com.epam.digital.data.platform.notification.dto.audit.NotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.audit.RecipientAuditDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
+import com.epam.digital.data.platform.starter.audit.model.AuditSourceInfo;
 import com.epam.digital.data.platform.starter.audit.model.EventType;
 import com.epam.digital.data.platform.starter.audit.model.Operation;
 import com.epam.digital.data.platform.starter.audit.model.Status;
@@ -83,6 +85,21 @@ public class InboxNotificationAuditFacade extends AbstractAuditFacade {
     context.put("delivery", delivery);
     event.setContext(context);
 
+    event.setSourceInfo(Objects.nonNull(notificationDto) ?
+        toAuditSourceDto(notificationDto.getContext()) : null);
+
     auditService.sendAudit(event.build());
+  }
+
+  private AuditSourceInfo toAuditSourceDto(NotificationContextDto notificationContext) {
+    return AuditSourceInfo.AuditSourceInfoBuilder.anAuditSourceInfo()
+        .application(notificationContext.getApplication())
+        .businessActivity(notificationContext.getBusinessActivity())
+        .businessActivityInstanceId(notificationContext.getBusinessActivityInstanceId())
+        .businessProcess(notificationContext.getBusinessProcess())
+        .businessProcessDefinitionId(notificationContext.getBusinessProcessDefinitionId())
+        .businessProcessInstanceId(notificationContext.getBusinessProcessInstanceId())
+        .system(notificationContext.getSystem())
+        .build();
   }
 }

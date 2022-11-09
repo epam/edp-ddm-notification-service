@@ -76,8 +76,7 @@ public class UserNotificationFacade {
   private void notifyEachRecipient(boolean ignorePref, UserNotificationMessageDto message) {
     verifyNotification(message);
     parallelExecution(recipientsMaxThreadPoolSize, message.getRecipients(), recipient -> {
-      List<Channel> channels = getDefaultChannels();
-      channels.addAll(getChannels(ignorePref, recipient, recipient.getChannels(), message));
+      List<Channel> channels = getChannels(ignorePref, recipient, recipient.getChannels(), message);
       log.info("Allowed communication channels {}", channels);
 
       parallelExecution(channelsMaxThreadPoolSize, channels,
@@ -130,7 +129,10 @@ public class UserNotificationFacade {
           .map(channelObject -> Channel.valueOf(channelObject.getChannel().toUpperCase()))
           .collect(Collectors.toList());
     }
-    return this.getChannelsFromSettings(recipient, notificationRecord);
+
+    List<Channel> channelsToNotify = getDefaultChannels();
+    channelsToNotify.addAll(this.getChannelsFromSettings(recipient, notificationRecord));
+    return channelsToNotify;
   }
 
   private List<Channel> getDefaultChannels() {

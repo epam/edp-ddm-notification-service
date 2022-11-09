@@ -71,7 +71,7 @@ public class InboxNotificationProducer implements NotificationProducer {
       log.warn(
           "Notification template not found for template: {}. '{}' Notification won't be delivered.",
           message.getNotification().getTemplateName(), getChannel().getValue());
-      return null;
+      throw e;
     }
 
     return InboxNotificationMessageDto.builder()

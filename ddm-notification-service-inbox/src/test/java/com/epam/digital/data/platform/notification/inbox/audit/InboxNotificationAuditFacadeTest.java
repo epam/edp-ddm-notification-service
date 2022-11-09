@@ -20,12 +20,14 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
 import com.epam.digital.data.platform.notification.dto.audit.NotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.starter.audit.model.AuditEvent;
+import com.epam.digital.data.platform.starter.audit.model.AuditSourceInfo;
 import com.epam.digital.data.platform.starter.audit.model.Step;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
@@ -63,6 +65,7 @@ class InboxNotificationAuditFacadeTest {
         notificationMsg.getNotification().getSubject());
     assertThat(notificationAudit.getMessage()).isEqualTo(
         notificationMsg.getNotification().getMessage());
+    assertSourceInfo(auditEvent.getSourceInfo(), notificationMsg.getContext());
   }
 
   @Test
@@ -76,6 +79,7 @@ class InboxNotificationAuditFacadeTest {
     var auditEvent = auditEventArgumentCaptor.getValue();
     var deliveryAuditDto = (DeliveryAuditDto) auditEvent.getContext().get("delivery");
     assertThat(deliveryAuditDto.getFailureReason()).isEqualTo("fail reason");
+    assertSourceInfo(auditEvent.getSourceInfo(), notificationMsg.getContext());
   }
 
   private InboxNotificationMessageDto createMessage() {
@@ -85,6 +89,31 @@ class InboxNotificationAuditFacadeTest {
             .message("msg")
             .build())
         .recipientName("testuser")
+        .context(NotificationContextDto.builder()
+            .application("application")
+            .businessActivity("activity")
+            .businessActivityInstanceId("instanceId")
+            .businessProcess("process")
+            .businessProcessDefinitionId("processDefinitionId")
+            .system("system")
+            .build())
         .build();
+  }
+
+  private void assertSourceInfo(AuditSourceInfo sourceInfo, NotificationContextDto contextDto) {
+    assertThat(sourceInfo.getApplication()).isEqualTo(
+        contextDto.getApplication());
+    assertThat(sourceInfo.getSystem()).isEqualTo(
+        contextDto.getSystem());
+    assertThat(sourceInfo.getBusinessProcessDefinitionId()).isEqualTo(
+        contextDto.getBusinessProcessDefinitionId());
+    assertThat(sourceInfo.getBusinessActivity()).isEqualTo(
+        contextDto.getBusinessActivity());
+    assertThat(sourceInfo.getBusinessProcess()).isEqualTo(
+        contextDto.getBusinessProcess());
+    assertThat(sourceInfo.getBusinessProcessInstanceId()).isEqualTo(
+        contextDto.getBusinessProcessInstanceId());
+    assertThat(sourceInfo.getBusinessActivityInstanceId()).isEqualTo(
+        contextDto.getBusinessActivityInstanceId());
   }
 }

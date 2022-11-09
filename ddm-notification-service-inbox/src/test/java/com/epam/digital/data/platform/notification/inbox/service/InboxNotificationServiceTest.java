@@ -32,7 +32,7 @@ import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationDt
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationResponseDto;
 import com.epam.digital.data.platform.notification.entity.InboxNotification;
-import com.epam.digital.data.platform.notification.inbox.exception.model.ForbiddenNotificationActionException;
+import com.epam.digital.data.platform.notification.exception.ForbiddenNotificationActionException;
 import com.epam.digital.data.platform.notification.inbox.repository.InboxNotificationRepository;
 import com.epam.digital.data.platform.notification.inbox.template.InboxFreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.model.JwtClaims;
