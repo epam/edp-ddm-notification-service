@@ -45,6 +45,22 @@ public class ApplicationExceptionHandler extends ResponseEntityExceptionHandler 
         .body(newDetailedResponse(HttpStatus.INTERNAL_SERVER_ERROR.toString()));
   }
 
+  @ExceptionHandler(ForbiddenNotificationActionException.class)
+  public ResponseEntity<DetailedErrorResponse<Void>> handleForbiddenNotificationActionException(
+      ForbiddenNotificationActionException exception) {
+    log.error("Forbidden exception", exception);
+    return ResponseEntity.status(HttpStatus.FORBIDDEN)
+        .body(newDetailedResponse(HttpStatus.FORBIDDEN.toString()));
+  }
+
+  @ExceptionHandler(ParsingException.class)
+  public ResponseEntity<DetailedErrorResponse<Void>> handleParsingException(
+      ParsingException exception) {
+    log.error("Parsing exception", exception);
+    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+        .body(newDetailedResponse(HttpStatus.BAD_REQUEST.toString()));
+  }
+
   @Override
   protected ResponseEntity<Object> handleHttpMessageNotReadable(
       HttpMessageNotReadableException exception, HttpHeaders headers, HttpStatus status,

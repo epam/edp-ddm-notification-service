@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.digital.data.platform.notification.inbox.exception.model;
+package com.epam.digital.data.platform.notification.exception;
 
-public class ForbiddenNotificationActionException extends RuntimeException {
+public class ParsingException extends RuntimeException {
 
-  public ForbiddenNotificationActionException(String message) {
-    super(message);
+  public ParsingException(String message, Throwable cause) {
+    super(message, cause);
   }
 }

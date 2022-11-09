@@ -20,7 +20,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import com.epam.digital.data.platform.notification.inbox.exception.model.ParsingException;
+import com.epam.digital.data.platform.notification.exception.ParsingException;
 import com.epam.digital.data.platform.notification.inbox.util.TestUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;

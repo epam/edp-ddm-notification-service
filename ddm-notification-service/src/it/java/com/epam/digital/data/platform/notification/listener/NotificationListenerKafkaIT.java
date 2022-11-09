@@ -27,6 +27,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import com.epam.digital.data.platform.notification.BaseKafkaIT;
+import com.epam.digital.data.platform.notification.audit.UserNotificationAuditFacade;
 import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.notification.dto.UserNotificationDto;
@@ -36,6 +37,7 @@ import com.epam.digital.data.platform.notification.email.audit.EmailNotification
 import com.epam.digital.data.platform.notification.email.listener.EmailNotificationListener;
 import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
+import com.epam.digital.data.platform.starter.audit.model.Step;
 import com.github.tomakehurst.wiremock.WireMockServer;
 import com.icegreen.greenmail.util.GreenMailUtil;
 import java.util.List;
@@ -65,6 +67,8 @@ class NotificationListenerKafkaIT extends BaseKafkaIT {
   private EmailNotificationListener emailNotificationListener;
   @SpyBean
   private EmailNotificationAuditFacade emailNotificationAuditFacade;
+  @SpyBean
+  private UserNotificationAuditFacade userNotificationAuditFacade;
 
   @BeforeEach
   void setup() {
@@ -118,6 +122,8 @@ class NotificationListenerKafkaIT extends BaseKafkaIT {
 
       verify(emailNotificationAuditFacade, times(1)).sendAuditOnSuccess(Channel.EMAIL,
           emailNotificationMessage);
+      verify(userNotificationAuditFacade, times(1)).sendAuditOnFailure(Channel.INBOX,
+          userNotificationMessage, Step.AFTER, "Notification template template-id not found");
     });
   }
 

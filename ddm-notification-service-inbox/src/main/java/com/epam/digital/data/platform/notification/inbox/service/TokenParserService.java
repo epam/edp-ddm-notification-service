@@ -16,7 +16,7 @@
 
 package com.epam.digital.data.platform.notification.inbox.service;
 
-import com.epam.digital.data.platform.notification.inbox.exception.model.ParsingException;
+import com.epam.digital.data.platform.notification.exception.ParsingException;
 import com.epam.digital.data.platform.notification.model.JwtClaims;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;

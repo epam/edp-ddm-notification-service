@@ -16,10 +16,12 @@
 
 package com.epam.digital.data.platform.notification.audit;
 
+import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.audit.AuditResultDto;
 import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
+import com.epam.digital.data.platform.starter.audit.model.AuditSourceInfo;
 import com.epam.digital.data.platform.starter.audit.model.EventType;
 import com.epam.digital.data.platform.starter.audit.model.Operation;
 import com.epam.digital.data.platform.starter.audit.model.Status;
@@ -27,6 +29,7 @@ import com.epam.digital.data.platform.starter.audit.model.Step;
 import com.epam.digital.data.platform.starter.audit.service.AbstractAuditFacade;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
+import java.util.Objects;
 import org.slf4j.MDC;
 
 public class UserNotificationAuditFacade extends AbstractAuditFacade {
@@ -58,6 +61,21 @@ public class UserNotificationAuditFacade extends AbstractAuditFacade {
         .build());
     event.setContext(context);
 
+    event.setSourceInfo(Objects.nonNull(notificationDto) ?
+        toAuditSourceDto(notificationDto.getContext()) : null);
+
     auditService.sendAudit(event.build());
+  }
+
+  private AuditSourceInfo toAuditSourceDto(NotificationContextDto notificationContext) {
+    return AuditSourceInfo.AuditSourceInfoBuilder.anAuditSourceInfo()
+        .application(notificationContext.getApplication())
+        .businessActivity(notificationContext.getBusinessActivity())
+        .businessActivityInstanceId(notificationContext.getBusinessActivityInstanceId())
+        .businessProcess(notificationContext.getBusinessProcess())
+        .businessProcessDefinitionId(notificationContext.getBusinessProcessDefinitionId())
+        .businessProcessInstanceId(notificationContext.getBusinessProcessInstanceId())
+        .system(notificationContext.getSystem())
+        .build();
   }
 }
