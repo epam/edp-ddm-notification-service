@@ -18,9 +18,9 @@ package com.epam.digital.data.platform.notification.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.epam.digital.data.platform.notification.core.repository.CoreNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.dto.NotificationTemplateAttributeDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
-import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplateAttribute;
 import com.epam.digital.data.platform.notification.repository.NotificationTemplateAttributeRepository;
@@ -46,7 +46,7 @@ class SaveDefaultNotificationTemplateServiceTest {
   private SaveDefaultNotificationTemplateService service;
 
   @Autowired
-  private NotificationTemplateRepository notificationTemplateRepository;
+  private CoreNotificationTemplateRepository notificationTemplateRepository;
 
   @Autowired
   private NotificationTemplateAttributeRepository notificationTemplateAttributeRepository;

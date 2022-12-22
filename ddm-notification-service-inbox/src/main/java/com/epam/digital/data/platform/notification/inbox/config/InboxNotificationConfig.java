@@ -17,16 +17,19 @@
 package com.epam.digital.data.platform.notification.inbox.config;
 
 import com.epam.digital.data.platform.integration.idm.service.IdmService;
+import com.epam.digital.data.platform.notification.core.service.NotificationTemplateServiceImpl;
+import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.inbox.audit.InboxNotificationAuditFacade;
 import com.epam.digital.data.platform.notification.inbox.listener.InboxNotificationListener;
 import com.epam.digital.data.platform.notification.inbox.producer.InboxNotificationProducer;
 import com.epam.digital.data.platform.notification.inbox.repository.InboxNotificationRepository;
+import com.epam.digital.data.platform.notification.inbox.repository.InboxNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationService;
-import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationTemplateService;
 import com.epam.digital.data.platform.notification.inbox.service.TokenParserService;
-import com.epam.digital.data.platform.notification.inbox.template.InboxFreemarkerTemplateResolver;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -39,8 +42,8 @@ public class InboxNotificationConfig {
 
   @Bean
   public InboxNotificationService inboxNotificationService(
-      InboxNotificationTemplateService inboxNotificationTemplateService,
-      InboxFreemarkerTemplateResolver inboxFreemarkerTemplateResolver,
+      @Qualifier("inboxNotificationTemplateService") NotificationTemplateService<String> inboxNotificationTemplateService,
+      FreemarkerTemplateResolver inboxFreemarkerTemplateResolver,
       InboxNotificationRepository inboxNotificationRepository,
       TokenParserService tokenParserService,
       IdmService systemIdmService) {
@@ -57,24 +60,33 @@ public class InboxNotificationConfig {
   public InboxNotificationProducer inboxNotificationProducer(
       KafkaTemplate<String, Object> kafkaTemplate,
       InboxNotificationService inboxNotificationService,
-      InboxNotificationTemplateService inboxNotificationTemplateService) {
+      @Qualifier("inboxNotificationTemplateService") NotificationTemplateService<String> inboxNotificationTemplateService,
+      @Value("\u0023{kafkaProperties.topics['inbox-notifications']}") String topic) {
     return new InboxNotificationProducer(
+        inboxNotificationTemplateService,
         kafkaTemplate,
-        inboxNotificationService,
-        inboxNotificationTemplateService);
+        topic,
+        inboxNotificationService);
   }
 
   @Bean
   @ConditionalOnProperty(prefix = "data-platform.kafka", name = "enabled", havingValue = "true")
   public InboxNotificationListener inboxNotificationListener(
       InboxNotificationService inboxNotificationService,
-      InboxNotificationAuditFacade inboxNotificationAuditFacade) {
-    return new InboxNotificationListener(inboxNotificationService, inboxNotificationAuditFacade);
+      InboxNotificationAuditFacade notificationAuditFacade) {
+    return new InboxNotificationListener(inboxNotificationService, notificationAuditFacade);
   }
 
   @Bean
   public InboxNotificationAuditFacade inboxNotificationAuditFacade(AuditService auditService,
       @Value("${spring.application.name}") String appName, Clock clock) {
     return new InboxNotificationAuditFacade(auditService, appName, clock);
+  }
+
+  @Bean
+  @Qualifier("inboxNotificationTemplateService")
+  public NotificationTemplateService<String> inboxNotificationTemplateService(
+      InboxNotificationTemplateRepository inboxNotificationTemplateRepository) {
+    return new NotificationTemplateServiceImpl(inboxNotificationTemplateRepository);
   }
 }

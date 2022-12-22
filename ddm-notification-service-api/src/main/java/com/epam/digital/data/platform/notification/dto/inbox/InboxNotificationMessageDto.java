@@ -16,20 +16,20 @@
 
 package com.epam.digital.data.platform.notification.dto.inbox;
 
-import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationMessageDto;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class InboxNotificationMessageDto {
+@EqualsAndHashCode(callSuper = true)
+public class InboxNotificationMessageDto extends NotificationMessageDto {
 
-  private NotificationContextDto context;
-  private InboxNotificationDto notification;
   private String recipientName;
 
 }

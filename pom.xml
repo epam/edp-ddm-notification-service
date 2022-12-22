@@ -20,6 +20,7 @@
     <module>ddm-notification-service-email</module>
     <module>ddm-notification-service-inbox</module>
     <module>ddm-notification-service-diia</module>
+    <module>ddm-notification-service-core</module>
   </modules>
 
 	<properties>

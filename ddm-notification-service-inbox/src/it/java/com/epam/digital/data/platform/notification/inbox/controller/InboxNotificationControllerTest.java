@@ -27,6 +27,7 @@ import com.epam.digital.data.platform.notification.entity.InboxNotification;
 import com.epam.digital.data.platform.notification.inbox.config.InboxControllerTestConfig;
 import com.epam.digital.data.platform.notification.inbox.repository.InboxNotificationRepository;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import lombok.SneakyThrows;
 import org.apache.commons.io.FileUtils;
@@ -40,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
@@ -57,7 +59,8 @@ import org.springframework.util.ResourceUtils;
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT, properties = {
     "notifications.enabled=false"
 })
-class InboxNotificationControllerTest  {
+@ComponentScan("com.epam.digital.data.platform.notification.core")
+class InboxNotificationControllerTest {
 
   private static final String BASE_URL = "/api/notifications/inbox";
   private static String TOKEN;
@@ -69,7 +72,7 @@ class InboxNotificationControllerTest  {
 
   @BeforeAll
   static void init() throws IOException {
-    TOKEN = FileUtils.readFileToString(ResourceUtils.getFile("classpath:token.txt"));
+    TOKEN = FileUtils.readFileToString(ResourceUtils.getFile("classpath:token.txt"), StandardCharsets.UTF_8);
   }
 
   @Test

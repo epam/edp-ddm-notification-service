@@ -16,10 +16,10 @@
 
 package com.epam.digital.data.platform.notification.service;
 
+import com.epam.digital.data.platform.notification.core.repository.CoreNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.dto.NotificationTemplateAttributeDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateOutputDto;
-import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplateAttribute;
 import com.epam.digital.data.platform.notification.repository.NotificationTemplateAttributeRepository;
@@ -36,7 +36,7 @@ import lombok.RequiredArgsConstructor;
 public abstract class AbstractSaveNotificationTemplateService
     implements SaveNotificationTemplateService {
 
-  protected final NotificationTemplateRepository notificationTemplateRepository;
+  protected final CoreNotificationTemplateRepository notificationTemplateRepository;
   protected final NotificationTemplateAttributeRepository notificationTemplateAttributeRepository;
 
   protected SaveNotificationTemplateOutputDto buildOutputDtoFromDb(

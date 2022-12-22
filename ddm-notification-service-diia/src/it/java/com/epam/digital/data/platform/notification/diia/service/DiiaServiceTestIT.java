@@ -80,7 +80,7 @@ class DiiaServiceTestIT extends BaseIT {
               .application("appName")
               .system("LowCode")
               .build())
-          .notification(DiiaNotificationDto.builder()
+          .diiaNotificationDto(DiiaNotificationDto.builder()
               .templateName("templateName")
               .externalTemplateId("externalTemplateId")
               .build())

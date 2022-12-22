@@ -18,7 +18,7 @@ package com.epam.digital.data.platform.notification;
 
 import com.epam.digital.data.platform.notification.config.KafkaContextInitializer;
 import com.epam.digital.data.platform.notification.config.WireMockContextInitializer;
-import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
+import com.epam.digital.data.platform.notification.core.repository.CoreNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
@@ -48,7 +48,7 @@ public abstract class BaseIT {
       .withPerMethodLifecycle(false);
 
   @Autowired
-  protected NotificationTemplateRepository repository;
+  protected CoreNotificationTemplateRepository repository;
 
   @SneakyThrows
   public static String jsonToStr(String content) {

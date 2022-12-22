@@ -16,16 +16,25 @@
 
 package com.epam.digital.data.platform.notification.producer;
 
+import com.epam.digital.data.platform.notification.dto.ChannelObject;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationMessageDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
+import java.util.List;
 
 /**
  * Notification producer that sends message to specific channel topic.
  */
-public interface NotificationProducer {
+public interface NotificationProducer<T extends NotificationMessageDto> {
 
   void send(Recipient recipient, UserNotificationMessageDto message);
 
   Channel getChannel();
+
+  T createMessageDto(Recipient recipient, UserNotificationMessageDto message);
+
+  String getTitle(UserNotificationMessageDto message);
+
+  ChannelObject getChannelObject(List<ChannelObject> channelObjectList);
 }

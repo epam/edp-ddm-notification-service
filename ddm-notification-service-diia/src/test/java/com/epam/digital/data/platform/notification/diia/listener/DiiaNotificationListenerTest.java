@@ -20,7 +20,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import com.epam.digital.data.platform.notification.diia.audit.DiiaNotificationAuditFacade;
 import com.epam.digital.data.platform.notification.diia.service.DiiaService;
@@ -28,6 +27,7 @@ import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaRecipientDto;
 import com.epam.digital.data.platform.notification.exception.NotificationException;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.starter.audit.model.Step;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,13 +49,12 @@ class DiiaNotificationListenerTest {
   void testNotify() {
     var message = DiiaNotificationMessageDto.builder()
         .recipient(DiiaRecipientDto.builder().id("100").build())
-        .notification(new DiiaNotificationDto()).build();
-    when(diiaService.notify(message)).thenReturn("1000");
+        .diiaNotificationDto(new DiiaNotificationDto()).build();
 
     listener.notify(message);
 
     verify(diiaService, times(1)).notify(message);
-    verify(diiaNotificationAuditFacade, times(1)).sendAuditOnSuccess(message, "1000");
+    verify(diiaNotificationAuditFacade, times(1)).sendAuditOnSuccess(Channel.DIIA, message);
   }
 
   @Test
@@ -63,13 +62,13 @@ class DiiaNotificationListenerTest {
     var errorMsg = "error";
     var message = DiiaNotificationMessageDto.builder()
         .recipient(DiiaRecipientDto.builder().id("100").build())
-        .notification(new DiiaNotificationDto()).build();
+        .diiaNotificationDto(new DiiaNotificationDto()).build();
     doThrow(new NotificationException(errorMsg))
         .when(diiaService).notify(message);
 
     assertThrows(NotificationException.class, () -> listener.notify(message));
 
     verify(diiaNotificationAuditFacade, times(1))
-        .sendAuditOnFailure(message, Step.AFTER, errorMsg);
+        .sendAuditOnFailure(Channel.DIIA, message, Step.AFTER, errorMsg);
   }
 }

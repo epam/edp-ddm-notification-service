@@ -13,18 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.epam.digital.data.platform.notification.inbox.repository;
 
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
-import java.util.Optional;
+import com.epam.digital.data.platform.notification.repository.NotificationTemplateRepository;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface InboxNotificationTemplateRepository extends JpaRepository<NotificationTemplate, UUID> {
-
-  Optional<NotificationTemplate> findByNameAndChannel(String name, String channel);
+public interface InboxNotificationTemplateRepository extends
+    JpaRepository<NotificationTemplate, UUID>, NotificationTemplateRepository {
 
 }

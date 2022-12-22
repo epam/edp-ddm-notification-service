@@ -24,11 +24,11 @@ import com.epam.digital.data.platform.notification.dto.ChannelObject;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.notification.dto.UserNotificationDto;
 import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
-import com.epam.digital.data.platform.notification.dto.email.EmailNotificationDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailRecipientDto;
 import com.epam.digital.data.platform.notification.email.service.EmailNotificationService;
-import com.epam.digital.data.platform.notification.email.service.EmailNotificationTemplateService;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.List;
 import java.util.Map;
@@ -48,15 +48,13 @@ class EmailNotificationProducerTest {
   @Mock
   private EmailNotificationService emailNotificationService;
   @Mock
-  private EmailNotificationTemplateService emailNotificationTemplateService;
+  private NotificationTemplateService<String> emailNotificationTemplateService;
 
   private EmailNotificationProducer producer;
 
   @BeforeEach
   void init() {
-    producer = new EmailNotificationProducer(kafkaTemplate, emailNotificationService,
-        emailNotificationTemplateService);
-    producer.setTopic(topic);
+    producer = new EmailNotificationProducer(emailNotificationTemplateService, kafkaTemplate, topic, emailNotificationService);
   }
 
   @Test
@@ -82,7 +80,7 @@ class EmailNotificationProducerTest {
         .notification(userNotification)
         .build();
     when(emailNotificationService.prepareEmailBody(templateName, parameters)).thenReturn(emailBody);
-    when(emailNotificationTemplateService.getTitleByTemplateName(templateName)).thenReturn(title);
+    when(emailNotificationTemplateService.getTitleByNameAndChannel(templateName, Channel.EMAIL)).thenReturn(title);
 
     producer.send(recipient, userNotificationMsg);
 
@@ -91,7 +89,7 @@ class EmailNotificationProducerTest {
             .id(recipientId)
             .email(email)
             .build())
-        .notification(EmailNotificationDto.builder()
+        .notification(NotificationDto.builder()
             .message(emailBody)
             .subject(title)
             .build())

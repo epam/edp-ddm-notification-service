@@ -16,88 +16,30 @@
 
 package com.epam.digital.data.platform.notification.diia.audit;
 
-import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
-import com.epam.digital.data.platform.notification.dto.audit.AuditResultDto;
-import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
-import com.epam.digital.data.platform.notification.dto.audit.DiiaNotificationAuditDto;
+import com.epam.digital.data.platform.notification.core.audit.AbstractNotificationAuditFacade;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationAuditDto;
+import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationMessageDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
-import com.epam.digital.data.platform.starter.audit.model.AuditSourceInfo;
-import com.epam.digital.data.platform.starter.audit.model.EventType;
-import com.epam.digital.data.platform.starter.audit.model.Operation;
-import com.epam.digital.data.platform.starter.audit.model.Status;
-import com.epam.digital.data.platform.starter.audit.model.Step;
-import com.epam.digital.data.platform.starter.audit.service.AbstractAuditFacade;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
-import java.util.Objects;
-import org.slf4j.MDC;
 
-public class DiiaNotificationAuditFacade extends AbstractAuditFacade {
-
-  private static final String MDC_TRACE_ID_HEADER = "X-B3-TraceId";
+public class DiiaNotificationAuditFacade extends
+    AbstractNotificationAuditFacade<DiiaNotificationMessageDto> {
 
   public DiiaNotificationAuditFacade(AuditService auditService, String appName, Clock clock) {
     super(auditService, appName, clock);
   }
 
-  public void sendAuditOnSuccess(DiiaNotificationMessageDto notification, String distributionId) {
-    this.sendNotificationAudit(
-        Step.AFTER.name(),
-        AuditResultDto.builder().status(Status.SUCCESS.name()).build(),
-        notification,
-        distributionId);
-  }
-
-  public void sendAuditOnFailure(
-      DiiaNotificationMessageDto notification, Step step, String failureReason) {
-    this.sendNotificationAudit(
-        step.name(),
-        AuditResultDto.builder().status(Status.FAILURE.name()).failureReason(failureReason).build(),
-        notification,
-        null);
-  }
-
-  private void sendNotificationAudit(String step,
-      AuditResultDto result, DiiaNotificationMessageDto notificationDto, String distributionId) {
-    var event = createBaseAuditEvent(
-        EventType.SYSTEM_EVENT, Operation.SEND_USER_NOTIFICATION.name(),
-        MDC.get(MDC_TRACE_ID_HEADER));
-
-    var notification = DiiaNotificationAuditDto.builder()
-        .channel(Channel.DIIA.getValue())
-        .externalTemplateId(notificationDto.getNotification().getExternalTemplateId())
-        .templateName(notificationDto.getNotification().getTemplateName())
-        .distributionId(distributionId)
+  @Override
+  public NotificationAuditDto notificationAuditDto(DiiaNotificationMessageDto notificationDto,
+      Channel channel) {
+    return DiiaNotificationAuditDto.builder()
+        .channel(channel.getValue())
+        .externalTemplateId(notificationDto.getDiiaNotificationDto().getExternalTemplateId())
+        .templateName(notificationDto.getDiiaNotificationDto().getTemplateName())
+        .distributionId(notificationDto.getDistributionId())
         .recipient(notificationDto.getRecipient())
-        .build();
-    var delivery = DeliveryAuditDto.builder()
-        .failureReason(result.getFailureReason())
-        .status(result.getStatus())
-        .channel(Channel.DIIA)
-        .build();
-
-    var context = auditService.createContext(
-        Operation.SEND_USER_NOTIFICATION.name(), step, null, null, null, result.getStatus());
-    context.put("notification", notification);
-    context.put("delivery", delivery);
-    event.setContext(context);
-
-    event.setSourceInfo(Objects.nonNull(notificationDto.getContext()) ?
-        toAuditSourceDto(notificationDto.getContext()) : null);
-
-    auditService.sendAudit(event.build());
-  }
-
-  private AuditSourceInfo toAuditSourceDto(NotificationContextDto notificationContext) {
-    return AuditSourceInfo.AuditSourceInfoBuilder.anAuditSourceInfo()
-        .application(notificationContext.getApplication())
-        .businessActivity(notificationContext.getBusinessActivity())
-        .businessActivityInstanceId(notificationContext.getBusinessActivityInstanceId())
-        .businessProcess(notificationContext.getBusinessProcess())
-        .businessProcessDefinitionId(notificationContext.getBusinessProcessDefinitionId())
-        .businessProcessInstanceId(notificationContext.getBusinessProcessInstanceId())
-        .system(notificationContext.getSystem())
         .build();
   }
 }

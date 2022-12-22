@@ -22,6 +22,7 @@ import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationMess
 import com.epam.digital.data.platform.notification.dto.diia.DiiaPublishTemplateRequestDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaSendNotificationRequestDto;
 import com.epam.digital.data.platform.notification.dto.diia.ExternalTemplateId;
+import com.epam.digital.data.platform.notification.service.NotificationService;
 import com.epam.digital.data.platform.starter.security.exception.JwtParsingException;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.JWTParser;
@@ -37,8 +38,8 @@ import org.springframework.http.MediaType;
 
 @Slf4j
 @RequiredArgsConstructor
-public class DiiaService {
-  
+public class DiiaService implements NotificationService<DiiaNotificationMessageDto> {
+
   private static final String BEARER_HEADER_PATTERN = "Bearer %s";
 
   private final DiiaRestClient diiaRestClient;
@@ -47,11 +48,12 @@ public class DiiaService {
 
   private volatile String accessToken;
 
-  public String notify(DiiaNotificationMessageDto message) {
+  @Override
+  public void notify(DiiaNotificationMessageDto message) {
     log.info("Sending notification via diia. RecipientId: '{}'", message.getRecipient().getId());
     var result = diiaRestClient.sendNotification(toRequest(message), createHeaders());
+    message.setDistributionId(result.getDistributionId());
     log.info("Diia notification was sent. DistributionId: '{}'", result.getDistributionId());
-    return result.getDistributionId();
   }
 
   public ExternalTemplateId publishTemplate(DiiaPublishTemplateRequestDto template) {
@@ -60,7 +62,7 @@ public class DiiaService {
 
   private DiiaSendNotificationRequestDto toRequest(DiiaNotificationMessageDto message) {
     return DiiaSendNotificationRequestDto.builder()
-        .templateId(message.getNotification().getExternalTemplateId())
+        .templateId(message.getDiiaNotificationDto().getExternalTemplateId())
         .recipients(List.of(message.getRecipient()))
         .build();
   }
@@ -74,7 +76,7 @@ public class DiiaService {
 
   private String getAccessToken() {
     if (accessToken == null || isTokenExpired(accessToken)) {
-      synchronized(this) {
+      synchronized (this) {
         if (accessToken == null || isTokenExpired(accessToken)) {
           accessToken = diiaRestClient.getToken(partnerToken).getToken();
         }

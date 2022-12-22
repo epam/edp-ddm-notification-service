@@ -17,18 +17,16 @@
 package com.epam.digital.data.platform.notification.dto.audit;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@SuperBuilder
 public class NotificationAuditDto {
 
   private String channel;
-  private String subject;
-  private String message;
-  private RecipientAuditDto recipient;
+
 }

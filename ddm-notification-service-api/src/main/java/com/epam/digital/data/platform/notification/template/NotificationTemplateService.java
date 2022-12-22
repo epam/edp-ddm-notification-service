@@ -16,13 +16,15 @@
 
 package com.epam.digital.data.platform.notification.template;
 
+import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 
 public interface NotificationTemplateService<T> {
 
-  T getByName(String templateName);
+  T getContentByNameAndChannel(String templateName, Channel channel);
 
-  String getTitleByTemplateName(String templateName);
+  String getTitleByNameAndChannel(String templateName, Channel channel);
 
-  String getByNameAndChannel(String name, Channel channel);
+  NotificationTemplate getTemplate(String templateName, Channel channel);
+
 }

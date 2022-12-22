@@ -36,6 +36,11 @@
       <artifactId>user-settings-model</artifactId>
       <version>${settings.model.version}</version>
     </dependency>
+    <dependency>
+      <groupId>com.epam.digital.data.platform</groupId>
+      <artifactId>ddm-starter-audit</artifactId>
+      <version>${ddm-starter-audit.version}</version>
+    </dependency>
   </dependencies>
 
 </project>

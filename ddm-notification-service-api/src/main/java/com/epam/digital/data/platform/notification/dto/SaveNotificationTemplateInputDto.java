@@ -32,5 +32,6 @@ public class SaveNotificationTemplateInputDto {
 
   private String title;
   private String content;
+  @Builder.Default
   private List<NotificationTemplateAttributeDto> attributes = new ArrayList<>();
 }

@@ -16,14 +16,17 @@
 
 package com.epam.digital.data.platform.notification.diia.config;
 
+import com.epam.digital.data.platform.notification.core.service.NotificationTemplateServiceImpl;
 import com.epam.digital.data.platform.notification.diia.audit.DiiaNotificationAuditFacade;
 import com.epam.digital.data.platform.notification.diia.listener.DiiaNotificationListener;
 import com.epam.digital.data.platform.notification.diia.producer.DiiaNotificationProducer;
 import com.epam.digital.data.platform.notification.diia.repository.DiiaNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.diia.service.DiiaRestClient;
 import com.epam.digital.data.platform.notification.diia.service.DiiaService;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -43,8 +46,10 @@ public class DiiaNotificationConfig {
   @Bean
   @ConditionalOnProperty(prefix = "data-platform.kafka", name = "enabled", havingValue = "true")
   public DiiaNotificationProducer diiaNotificationProducer(
-      KafkaTemplate<String, Object> kafkaTemplate, DiiaNotificationTemplateRepository repository) {
-    return new DiiaNotificationProducer(kafkaTemplate, repository);
+      @Qualifier("diiaNotificationTemplateService") NotificationTemplateService<String> diiaNotificationTemplateService,
+      KafkaTemplate<String, Object> kafkaTemplate,
+      @Value("\u0023{kafkaProperties.topics['diia-notifications']}") String topic) {
+    return new DiiaNotificationProducer(diiaNotificationTemplateService, kafkaTemplate, topic);
   }
 
   @Bean
@@ -63,5 +68,12 @@ public class DiiaNotificationConfig {
   @Bean
   public Clock clock() {
     return Clock.systemDefaultZone();
+  }
+
+  @Bean
+  @Qualifier("diiaNotificationTemplateService")
+  public NotificationTemplateService<String> diiaNotificationTemplateService(
+      DiiaNotificationTemplateRepository diiaNotificationTemplateRepository) {
+    return new NotificationTemplateServiceImpl(diiaNotificationTemplateRepository);
   }
 }

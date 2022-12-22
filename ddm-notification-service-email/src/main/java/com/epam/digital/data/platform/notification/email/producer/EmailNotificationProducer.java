@@ -16,57 +16,47 @@
 
 package com.epam.digital.data.platform.notification.email.producer;
 
-import com.epam.digital.data.platform.notification.dto.ChannelObject;
+import com.epam.digital.data.platform.notification.core.producer.AbstractNotificationProducer;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
-import com.epam.digital.data.platform.notification.dto.email.EmailNotificationDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailRecipientDto;
-import com.epam.digital.data.platform.notification.producer.NotificationProducer;
-import com.epam.digital.data.platform.notification.email.service.EmailNotificationTemplateService;
 import com.epam.digital.data.platform.notification.email.service.EmailNotificationService;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
-import java.util.List;
-import java.util.Objects;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 
 @Slf4j
-@Setter
-@RequiredArgsConstructor
-public class EmailNotificationProducer implements NotificationProducer {
+public class EmailNotificationProducer extends
+    AbstractNotificationProducer<EmailNotificationMessageDto> {
 
-  @Value("\u0023{kafkaProperties.topics['email-notifications']}")
-  private String topic;
-
-  private final KafkaTemplate<String, Object> kafkaTemplate;
   private final EmailNotificationService emailNotificationService;
-  private final EmailNotificationTemplateService emailNotificationTemplateService;
 
-  @Override
-  public void send(Recipient recipient, UserNotificationMessageDto message) {
-    log.info("Sending email notification Kafka message");
-    var emailNotificationMessageDto = createMessageDto(recipient, message);
-    kafkaTemplate.send(topic, emailNotificationMessageDto);
-    log.info("Email notification Kafka message is sent, context: {}", message.getContext());
+  public EmailNotificationProducer(
+      NotificationTemplateService<String> notificationTemplateService,
+      KafkaTemplate<String, Object> kafkaTemplate,
+      String topic,
+      EmailNotificationService emailNotificationService) {
+    super(notificationTemplateService, kafkaTemplate, topic);
+    this.emailNotificationService = emailNotificationService;
   }
+
 
   @Override
   public Channel getChannel() {
     return Channel.EMAIL;
   }
 
-  private EmailNotificationMessageDto createMessageDto(Recipient recipient,
+  public EmailNotificationMessageDto createMessageDto(Recipient recipient,
       UserNotificationMessageDto message) {
-    var emailChannel = getEmailChannel(recipient.getChannels());
+    var emailChannel = getChannelObject(recipient.getChannels());
     var messageBody = createEmailMessageBody(recipient, message);
     var title = getTitle(message);
     return EmailNotificationMessageDto.builder()
         .context(message.getContext())
-        .notification(EmailNotificationDto.builder()
+        .notification(NotificationDto.builder()
             .subject(title)
             .message(messageBody)
             .build())
@@ -82,17 +72,4 @@ public class EmailNotificationProducer implements NotificationProducer {
     return emailNotificationService.prepareEmailBody(templateName, recipient.getParameters());
   }
 
-  private ChannelObject getEmailChannel(List<ChannelObject> channelObjectList) {
-    return channelObjectList.stream()
-        .filter(channelObject -> Channel.EMAIL.getValue().equals(channelObject.getChannel()))
-        .findFirst()
-        .orElseThrow(() -> new IllegalArgumentException("Email channel not found"));
-  }
-
-  private String getTitle(UserNotificationMessageDto message) {
-    var title = message.getNotification().getTitle();
-    var templateName = message.getNotification().getTemplateName();
-    return Objects.isNull(title) ?
-        emailNotificationTemplateService.getTitleByTemplateName(templateName) : title;
-  }
 }

@@ -16,9 +16,9 @@
 
 package com.epam.digital.data.platform.notification.service;
 
+import com.epam.digital.data.platform.notification.core.repository.CoreNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateOutputDto;
-import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
 import com.epam.digital.data.platform.notification.repository.NotificationTemplateAttributeRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -33,7 +33,7 @@ public class SaveDefaultNotificationTemplateService
     extends AbstractSaveNotificationTemplateService {
 
   public SaveDefaultNotificationTemplateService(
-      NotificationTemplateRepository notificationTemplateRepository,
+      CoreNotificationTemplateRepository notificationTemplateRepository,
       NotificationTemplateAttributeRepository notificationTemplateAttributeRepository) {
     super(notificationTemplateRepository, notificationTemplateAttributeRepository);
   }

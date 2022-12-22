@@ -22,7 +22,7 @@ import static org.mockito.Mockito.verify;
 
 import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
-import com.epam.digital.data.platform.notification.dto.audit.DiiaNotificationAuditDto;
+import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaRecipientDto;
@@ -59,7 +59,7 @@ class DiiaNotificationAuditFacadeTest {
     var recipient = createRecipient();
     var diiaNotificationMsg = createMessage(recipient);
 
-    auditFacade.sendAuditOnSuccess(diiaNotificationMsg, "1000");
+    auditFacade.sendAuditOnSuccess(Channel.DIIA, diiaNotificationMsg);
 
     verify(auditService, times(1)).sendAudit(auditEventArgumentCaptor.capture());
     var auditEvent = auditEventArgumentCaptor.getValue();
@@ -79,7 +79,7 @@ class DiiaNotificationAuditFacadeTest {
     var recipient = createRecipient();
     var diiaNotificationMsg = createMessage(recipient);
 
-    auditFacade.sendAuditOnFailure(diiaNotificationMsg, Step.AFTER, "fail reason");
+    auditFacade.sendAuditOnFailure(Channel.DIIA, diiaNotificationMsg, Step.AFTER, "fail reason");
 
     verify(auditService, times(1)).sendAudit(auditEventArgumentCaptor.capture());
     var auditEvent = auditEventArgumentCaptor.getValue();
@@ -90,11 +90,12 @@ class DiiaNotificationAuditFacadeTest {
 
   private DiiaNotificationMessageDto createMessage(DiiaRecipientDto recipient) {
     return DiiaNotificationMessageDto.builder()
-        .notification(DiiaNotificationDto.builder()
+        .diiaNotificationDto(DiiaNotificationDto.builder()
             .externalTemplateId("externalTemplateId")
             .templateName("templateName")
             .build())
         .recipient(recipient)
+        .distributionId("1000")
         .context(NotificationContextDto.builder()
             .businessActivity("activity")
             .businessProcessDefinitionId("processDefinitionId")

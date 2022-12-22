@@ -17,18 +17,23 @@
 package com.epam.digital.data.platform.notification.dto.diia;
 
 import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationMessageDto;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
 @Data
-@Builder
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
-public class DiiaNotificationMessageDto {
+@EqualsAndHashCode(callSuper = true)
+public class DiiaNotificationMessageDto extends NotificationMessageDto {
 
   private NotificationContextDto context;
-  private DiiaNotificationDto notification;
+  private DiiaNotificationDto diiaNotificationDto;
   private DiiaRecipientDto recipient;
+  private String distributionId;
+
 }

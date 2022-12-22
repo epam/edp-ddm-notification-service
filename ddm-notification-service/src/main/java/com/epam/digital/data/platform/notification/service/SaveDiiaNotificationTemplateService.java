@@ -20,27 +20,22 @@ import static com.epam.digital.data.platform.notification.utils.TemplateAttribut
 import static com.epam.digital.data.platform.notification.utils.TemplateAttributes.SHORT_TEXT;
 import static com.epam.digital.data.platform.notification.utils.TemplateAttributes.TEMPLATE_TYPE;
 
+import com.epam.digital.data.platform.notification.core.repository.CoreNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.diia.service.DiiaService;
 import com.epam.digital.data.platform.notification.dto.NotificationTemplateAttributeDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateOutputDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaPublishTemplateRequestDto;
-import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplateAttribute;
 import com.epam.digital.data.platform.notification.repository.NotificationTemplateAttributeRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.UUID;
-import java.util.function.Function;
 import java.util.stream.Collectors;
-import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -56,7 +51,7 @@ public class SaveDiiaNotificationTemplateService
   private final ObjectMapper objectMapper;
 
   public SaveDiiaNotificationTemplateService(
-      NotificationTemplateRepository notificationTemplateRepository,
+      CoreNotificationTemplateRepository notificationTemplateRepository,
       NotificationTemplateAttributeRepository notificationTemplateAttributeRepository,
         DiiaService diiaService, ObjectMapper objectMapper) {
     super(notificationTemplateRepository, notificationTemplateAttributeRepository);
