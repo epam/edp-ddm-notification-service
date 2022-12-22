@@ -16,24 +16,14 @@
 
 package com.epam.digital.data.platform.notification.email;
 
-import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
-import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
 import com.icegreen.greenmail.configuration.GreenMailConfiguration;
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetupTest;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.util.UUID;
-import lombok.SneakyThrows;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.runner.RunWith;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -42,6 +32,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest(properties = {"data-platform.kafka.enabled=false"})
 @ComponentScan(basePackages = "com.epam.digital.data.platform.notification.email")
 @EntityScan("com.epam.digital.data.platform.notification.entity")
+@ComponentScan("com.epam.digital.data.platform.notification.core")
 public abstract class BaseIT {
 
   @RegisterExtension
@@ -49,20 +40,4 @@ public abstract class BaseIT {
       .withConfiguration(GreenMailConfiguration.aConfig().withUser("username", "password"))
       .withPerMethodLifecycle(false);
 
-  @Autowired
-  protected NotificationTemplateRepository repository;
-
-  public NotificationTemplate createEmailTemplateInDb(String name, String content, String title) {
-    var template = NotificationTemplate.builder()
-        .createdAt(LocalDateTime.now())
-        .updatedAt(LocalDateTime.now())
-        .channel("email")
-        .checksum("1234")
-        .content(content)
-        .name(name)
-        .title(title)
-        .id(UUID.randomUUID())
-        .build();
-    return repository.save(template);
-  }
 }

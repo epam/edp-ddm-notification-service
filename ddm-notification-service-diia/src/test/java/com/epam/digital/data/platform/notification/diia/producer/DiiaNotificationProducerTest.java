@@ -20,7 +20,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.epam.digital.data.platform.notification.diia.repository.DiiaNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.dto.ChannelObject;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.notification.dto.UserNotificationDto;
@@ -29,10 +28,11 @@ import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaRecipientDto;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
+import com.epam.digital.data.platform.notification.repository.NotificationTemplateRepository;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,14 +47,15 @@ class DiiaNotificationProducerTest {
   @Mock
   private KafkaTemplate<String, Object> kafkaTemplate;
   @Mock
-  private DiiaNotificationTemplateRepository repository;
+  private NotificationTemplateRepository repository;
+  @Mock
+  private NotificationTemplateService<String> notificationTemplateService;
 
   private DiiaNotificationProducer producer;
 
   @BeforeEach
   void init() {
-    producer = new DiiaNotificationProducer(kafkaTemplate, repository);
-    producer.setTopic(topic);
+    producer = new DiiaNotificationProducer(notificationTemplateService, kafkaTemplate, topic);
   }
 
   @Test
@@ -78,8 +79,8 @@ class DiiaNotificationProducerTest {
     var userNotificationMsg = UserNotificationMessageDto.builder()
         .notification(userNotification)
         .build();
-    when(repository.findByNameAndChannel(templateName, Channel.DIIA.getValue())).thenReturn(
-        Optional.of(NotificationTemplate.builder().extTemplateId(templateId).build()));
+    when(notificationTemplateService.getTemplate(templateName, Channel.DIIA)).thenReturn(
+        NotificationTemplate.builder().extTemplateId(templateId).build());
 
     producer.send(recipient, userNotificationMsg);
 
@@ -87,9 +88,10 @@ class DiiaNotificationProducerTest {
         .recipient(DiiaRecipientDto.builder()
             .id(recipientId)
             .rnokpp(rnokpp)
-            .parameters(List.of(DiiaRecipientDto.KeyValue.builder().key("name").value("John").build()))
+            .parameters(
+                List.of(DiiaRecipientDto.KeyValue.builder().key("name").value("John").build()))
             .build())
-        .notification(DiiaNotificationDto.builder()
+        .diiaNotificationDto(DiiaNotificationDto.builder()
             .externalTemplateId(templateId)
             .templateName(templateName)
             .build())

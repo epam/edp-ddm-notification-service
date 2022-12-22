@@ -26,9 +26,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.epam.digital.data.platform.notification.core.repository.CoreNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.dto.NotificationTemplateAttributeDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
-import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Collections;
@@ -64,7 +64,7 @@ class NotificationTemplateControllerTest {
   @Autowired
   ObjectMapper objectMapper;
   @Autowired
-  NotificationTemplateRepository notificationTemplateRepository;
+  CoreNotificationTemplateRepository notificationTemplateRepository;
 
   @BeforeAll
   static void init() throws IOException {

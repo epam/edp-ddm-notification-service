@@ -22,8 +22,8 @@ import static org.mockito.Mockito.verify;
 
 import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
-import com.epam.digital.data.platform.notification.dto.audit.NotificationAuditDto;
-import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
+import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.starter.audit.model.AuditEvent;
@@ -59,7 +59,7 @@ class InboxNotificationAuditFacadeTest {
 
     verify(auditService, times(1)).sendAudit(auditEventArgumentCaptor.capture());
     var auditEvent = auditEventArgumentCaptor.getValue();
-    var notificationAudit = (NotificationAuditDto) auditEvent.getContext().get("notification");
+    var notificationAudit = (InboxNotificationAuditDto) auditEvent.getContext().get("notification");
     assertThat(notificationAudit.getChannel()).isEqualTo(Channel.INBOX.getValue());
     assertThat(notificationAudit.getSubject()).isEqualTo(
         notificationMsg.getNotification().getSubject());
@@ -84,7 +84,7 @@ class InboxNotificationAuditFacadeTest {
 
   private InboxNotificationMessageDto createMessage() {
     return InboxNotificationMessageDto.builder()
-        .notification(InboxNotificationDto.builder()
+        .notification(NotificationDto.builder()
             .subject("test subject")
             .message("msg")
             .build())

@@ -13,57 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.epam.digital.data.platform.notification.inbox.audit;
 
-import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
-import com.epam.digital.data.platform.notification.dto.audit.AuditResultDto;
-import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
+import com.epam.digital.data.platform.notification.core.audit.AbstractNotificationAuditFacade;
 import com.epam.digital.data.platform.notification.dto.audit.NotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.audit.RecipientAuditDto;
+import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
-import com.epam.digital.data.platform.starter.audit.model.AuditSourceInfo;
-import com.epam.digital.data.platform.starter.audit.model.EventType;
-import com.epam.digital.data.platform.starter.audit.model.Operation;
-import com.epam.digital.data.platform.starter.audit.model.Status;
-import com.epam.digital.data.platform.starter.audit.model.Step;
-import com.epam.digital.data.platform.starter.audit.service.AbstractAuditFacade;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
 import java.util.Objects;
-import org.slf4j.MDC;
 
-public class InboxNotificationAuditFacade extends AbstractAuditFacade {
+public class InboxNotificationAuditFacade extends
+    AbstractNotificationAuditFacade<InboxNotificationMessageDto> {
 
-  private static final String MDC_TRACE_ID_HEADER = "X-B3-TraceId";
-
-  public InboxNotificationAuditFacade(AuditService auditService, String appName, Clock clock) {
+  public InboxNotificationAuditFacade(
+      AuditService auditService, String appName,
+      Clock clock) {
     super(auditService, appName, clock);
   }
 
-  public void sendAuditOnSuccess(Channel channel, InboxNotificationMessageDto notification) {
-    this.sendNotificationAudit(EventType.SYSTEM_EVENT,
-        Operation.SEND_USER_NOTIFICATION.name(), Step.AFTER.name(),
-        AuditResultDto.builder().status(Status.SUCCESS.name()).build(),
-        channel, notification);
-  }
+  @Override
+  public NotificationAuditDto notificationAuditDto(
+      InboxNotificationMessageDto notificationDto,
+      Channel channel) {
 
-  public void sendAuditOnFailure(Channel channel, InboxNotificationMessageDto notification,
-      Step step,
-      String failureReason) {
-    this.sendNotificationAudit(EventType.SYSTEM_EVENT,
-        Operation.SEND_USER_NOTIFICATION.name(), step.name(),
-        AuditResultDto.builder().status(Status.FAILURE.name()).failureReason(failureReason).build(),
-        channel, notification);
-  }
-
-  private void sendNotificationAudit(EventType eventType, String action, String step,
-      AuditResultDto result, Channel channel, InboxNotificationMessageDto notificationDto) {
-    var event = createBaseAuditEvent(
-        eventType, action, MDC.get(MDC_TRACE_ID_HEADER));
-
-    var notification = NotificationAuditDto.builder()
+    return InboxNotificationAuditDto.builder()
         .recipient(Objects.nonNull(notificationDto) ?
             RecipientAuditDto.builder()
                 .id(notificationDto.getRecipientName())
@@ -73,33 +49,6 @@ public class InboxNotificationAuditFacade extends AbstractAuditFacade {
         .message(Objects.nonNull(notificationDto) ?
             notificationDto.getNotification().getMessage() : null)
         .channel(channel.getValue())
-        .build();
-    var delivery = DeliveryAuditDto.builder()
-        .failureReason(result.getFailureReason())
-        .status(result.getStatus())
-        .channel(channel)
-        .build();
-
-    var context = auditService.createContext(action, step, null, null, null, result.getStatus());
-    context.put("notification", notification);
-    context.put("delivery", delivery);
-    event.setContext(context);
-
-    event.setSourceInfo(Objects.nonNull(notificationDto) ?
-        toAuditSourceDto(notificationDto.getContext()) : null);
-
-    auditService.sendAudit(event.build());
-  }
-
-  private AuditSourceInfo toAuditSourceDto(NotificationContextDto notificationContext) {
-    return AuditSourceInfo.AuditSourceInfoBuilder.anAuditSourceInfo()
-        .application(notificationContext.getApplication())
-        .businessActivity(notificationContext.getBusinessActivity())
-        .businessActivityInstanceId(notificationContext.getBusinessActivityInstanceId())
-        .businessProcess(notificationContext.getBusinessProcess())
-        .businessProcessDefinitionId(notificationContext.getBusinessProcessDefinitionId())
-        .businessProcessInstanceId(notificationContext.getBusinessProcessInstanceId())
-        .system(notificationContext.getSystem())
         .build();
   }
 }

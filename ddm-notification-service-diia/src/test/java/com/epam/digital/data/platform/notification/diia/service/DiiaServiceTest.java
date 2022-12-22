@@ -65,7 +65,7 @@ class DiiaServiceTest {
         .build();
     var recipient = DiiaRecipientDto.builder().rnokpp("rnokpp").build();
     var msgDto = DiiaNotificationMessageDto.builder()
-        .notification(notification).recipient(recipient)
+        .diiaNotificationDto(notification).recipient(recipient)
         .build();
 
     service.notify(msgDto);

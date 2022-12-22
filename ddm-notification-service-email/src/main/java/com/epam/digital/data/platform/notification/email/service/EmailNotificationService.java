@@ -16,8 +16,10 @@
 
 package com.epam.digital.data.platform.notification.email.service;
 
+import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.dto.email.EmailNotificationMessageDto;
-import com.epam.digital.data.platform.notification.email.template.FreemarkerTemplateResolver;
+import com.epam.digital.data.platform.notification.service.NotificationService;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -25,12 +27,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class EmailNotificationService {
+public class EmailNotificationService implements NotificationService<EmailNotificationMessageDto> {
 
-  private final EmailNotificationTemplateService templateService;
+  private final NotificationTemplateService<String> templateService;
   private final FreemarkerTemplateResolver templateResolver;
   private final MailService mailService;
 
+  @Override
   public void notify(EmailNotificationMessageDto message) {
     log.info("Sending notification via email");
     mailService.send(
@@ -41,7 +44,7 @@ public class EmailNotificationService {
   }
 
   public String prepareEmailBody(String templateName, Map<String, Object> data) {
-    var template = templateService.getByNameAndChannel(templateName, Channel.EMAIL);
+    var template = templateService.getContentByNameAndChannel(templateName, Channel.EMAIL);
     return templateResolver.resolve(templateName, template, data);
   }
 }

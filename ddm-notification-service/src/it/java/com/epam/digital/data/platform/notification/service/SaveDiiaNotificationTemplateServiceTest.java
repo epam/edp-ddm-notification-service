@@ -27,10 +27,10 @@ import static java.util.stream.Collectors.toMap;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.epam.digital.data.platform.notification.config.WireMockContextInitializer;
+import com.epam.digital.data.platform.notification.diia.repository.DiiaNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.diia.service.DiiaService;
 import com.epam.digital.data.platform.notification.dto.NotificationTemplateAttributeDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
-import com.epam.digital.data.platform.notification.email.repository.NotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
 import com.epam.digital.data.platform.notification.entity.NotificationTemplateAttribute;
 import com.epam.digital.data.platform.notification.repository.NotificationTemplateAttributeRepository;
@@ -64,7 +64,7 @@ class SaveDiiaNotificationTemplateServiceTest {
   @Autowired
   SaveDiiaNotificationTemplateService service;
   @Autowired
-  NotificationTemplateRepository notificationTemplateRepository;
+  DiiaNotificationTemplateRepository notificationTemplateRepository;
   @Autowired
   NotificationTemplateAttributeRepository notificationTemplateAttributeRepository;
   @Autowired

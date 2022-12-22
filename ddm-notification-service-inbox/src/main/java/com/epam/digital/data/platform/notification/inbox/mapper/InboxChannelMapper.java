@@ -28,7 +28,7 @@ public class InboxChannelMapper implements ChannelMapper {
   @Override
   public ChannelObject map(ChannelReadDto channelReadDto) {
     return ChannelObject.builder()
-        .channel(Channel.INBOX.getValue())
+        .channel(getChannel().getValue())
         .build();
   }
 

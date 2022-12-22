@@ -28,14 +28,16 @@ import static org.mockito.Mockito.when;
 
 import com.epam.digital.data.platform.integration.idm.model.IdmUser;
 import com.epam.digital.data.platform.integration.idm.service.IdmService;
-import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationDto;
+import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationResponseDto;
 import com.epam.digital.data.platform.notification.entity.InboxNotification;
 import com.epam.digital.data.platform.notification.exception.ForbiddenNotificationActionException;
 import com.epam.digital.data.platform.notification.inbox.repository.InboxNotificationRepository;
-import com.epam.digital.data.platform.notification.inbox.template.InboxFreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.model.JwtClaims;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,9 +59,9 @@ class InboxNotificationServiceTest {
   static final UUID ID = UUID.fromString("10e23e2a-6830-42a6-bf21-d0a4a90b5706");
 
   @Mock
-  private InboxNotificationTemplateService templateService;
+  private NotificationTemplateService<String> templateService;
   @Mock
-  private InboxFreemarkerTemplateResolver templateResolver;
+  private FreemarkerTemplateResolver templateResolver;
   @Mock
   private InboxNotificationRepository inboxNotificationRepository;
   @Mock
@@ -74,7 +76,7 @@ class InboxNotificationServiceTest {
     var subject = "subject";
     var recipientId = "recipientId";
     var message = "message";
-    var notification = InboxNotificationDto.builder().subject(subject)
+    var notification = NotificationDto.builder().subject(subject)
         .message(message).build();
     var msgDto = InboxNotificationMessageDto.builder()
         .notification(notification)
@@ -99,11 +101,11 @@ class InboxNotificationServiceTest {
   @Test
   void prepareInboxBody() {
     var data = new HashMap<String, Object>();
-    when(templateService.getByName("name")).thenReturn("content");
+    when(templateService.getContentByNameAndChannel("name", Channel.INBOX)).thenReturn("content");
 
     service.prepareInboxBody("name", Map.of());
 
-    verify(templateService, times(1)).getByName("name");
+    verify(templateService, times(1)).getContentByNameAndChannel("name", Channel.INBOX);
     verify(templateResolver, times(1)).resolve("name", "content", data);
   }
 

@@ -17,13 +17,16 @@
 package com.epam.digital.data.platform.notification.inbox.service;
 
 import com.epam.digital.data.platform.integration.idm.service.IdmService;
+import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationResponseDto;
 import com.epam.digital.data.platform.notification.entity.InboxNotification;
 import com.epam.digital.data.platform.notification.exception.ForbiddenNotificationActionException;
 import com.epam.digital.data.platform.notification.inbox.repository.InboxNotificationRepository;
-import com.epam.digital.data.platform.notification.inbox.template.InboxFreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.model.JwtClaims;
+import com.epam.digital.data.platform.notification.service.NotificationService;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,10 +39,10 @@ import org.springframework.data.domain.Pageable;
 
 @Slf4j
 @RequiredArgsConstructor
-public class InboxNotificationService {
+public class InboxNotificationService implements NotificationService<InboxNotificationMessageDto> {
 
-  private final InboxNotificationTemplateService templateService;
-  private final InboxFreemarkerTemplateResolver templateResolver;
+  private final NotificationTemplateService<String> templateService;
+  private final FreemarkerTemplateResolver templateResolver;
   private final InboxNotificationRepository inboxNotificationRepository;
   private final TokenParserService tokenParserService;
   private final IdmService systemIdmService;
@@ -98,7 +101,7 @@ public class InboxNotificationService {
   }
 
   public String prepareInboxBody(String templateName, Map<String, Object> data) {
-    var template = templateService.getByName(templateName);
+    var template = templateService.getContentByNameAndChannel(templateName, Channel.INBOX);
     return templateResolver.resolve(templateName, template, data);
   }
 }

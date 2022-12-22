@@ -16,40 +16,32 @@
 
 package com.epam.digital.data.platform.notification.diia.listener;
 
-import com.epam.digital.data.platform.notification.diia.audit.DiiaNotificationAuditFacade;
-import com.epam.digital.data.platform.notification.diia.service.DiiaService;
+import com.epam.digital.data.platform.notification.audit.NotificationAuditFacade;
+import com.epam.digital.data.platform.notification.core.listener.AbstractNotificationListener;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaNotificationMessageDto;
-import com.epam.digital.data.platform.notification.exception.NotificationException;
-import com.epam.digital.data.platform.starter.audit.model.Step;
-import lombok.RequiredArgsConstructor;
+import com.epam.digital.data.platform.notification.service.NotificationService;
+import com.epam.digital.data.platform.settings.model.dto.Channel;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 
 @Slf4j
-@RequiredArgsConstructor
-public class DiiaNotificationListener {
+public class DiiaNotificationListener extends AbstractNotificationListener<DiiaNotificationMessageDto> {
 
-  private final DiiaService diiaService;
-  private final DiiaNotificationAuditFacade diiaNotificationAuditFacade;
+  public DiiaNotificationListener(
+      NotificationService<DiiaNotificationMessageDto> notificationService,
+      NotificationAuditFacade<DiiaNotificationMessageDto> notificationAuditFacade) {
+    super(notificationService, notificationAuditFacade);
+  }
 
   @KafkaListener(
       topics = "\u0023{kafkaProperties.topics['diia-notifications']}",
       groupId = "\u0023{kafkaProperties.consumer.groupId}",
       containerFactory = "concurrentKafkaListenerContainerFactory")
+  @Override
   public void notify(DiiaNotificationMessageDto message) {
     log.info("Kafka event received. RecipientId: '{}', template: '{}'",
-        message.getRecipient().getId(), message.getNotification().toString());
-    sendNotification(message);
+        message.getRecipient().getId(), message.getDiiaNotificationDto().toString());
+    sendNotification(message, Channel.DIIA);
     log.info("Kafka event processed");
-  }
-
-  private void sendNotification(DiiaNotificationMessageDto message) {
-    try {
-      var distributionId = diiaService.notify(message);
-      diiaNotificationAuditFacade.sendAuditOnSuccess(message, distributionId);
-    } catch (RuntimeException exception) {
-      diiaNotificationAuditFacade.sendAuditOnFailure(message, Step.AFTER, exception.getMessage());
-      throw new NotificationException(exception.getMessage(), exception);
-    }
   }
 }

@@ -17,7 +17,7 @@
 package com.epam.digital.data.platform.notification.config;
 
 import com.epam.digital.data.platform.notification.facade.UserNotificationFacade;
-import com.epam.digital.data.platform.notification.listener.NotificationListener;
+import com.epam.digital.data.platform.notification.listener.UserNotificationListener;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +27,7 @@ import org.springframework.context.annotation.Configuration;
 public class KafkaConfig {
 
   @Bean
-  public NotificationListener notificationListener(UserNotificationFacade userNotificationFacade) {
-    return new NotificationListener(userNotificationFacade);
+  public UserNotificationListener notificationListener(UserNotificationFacade userNotificationFacade) {
+    return new UserNotificationListener(userNotificationFacade);
   }
 }

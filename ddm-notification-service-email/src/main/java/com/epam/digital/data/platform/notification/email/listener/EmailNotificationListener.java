@@ -16,22 +16,23 @@
 
 package com.epam.digital.data.platform.notification.email.listener;
 
+import com.epam.digital.data.platform.notification.audit.NotificationAuditFacade;
+import com.epam.digital.data.platform.notification.core.listener.AbstractNotificationListener;
 import com.epam.digital.data.platform.notification.dto.email.EmailNotificationMessageDto;
-import com.epam.digital.data.platform.notification.exception.NotificationException;
-import com.epam.digital.data.platform.notification.email.audit.EmailNotificationAuditFacade;
-import com.epam.digital.data.platform.notification.email.service.EmailNotificationService;
+import com.epam.digital.data.platform.notification.service.NotificationService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
-import com.epam.digital.data.platform.starter.audit.model.Step;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 
 @Slf4j
-@RequiredArgsConstructor
-public class EmailNotificationListener {
+public class EmailNotificationListener extends
+    AbstractNotificationListener<EmailNotificationMessageDto> {
 
-  private final EmailNotificationService emailNotificationService;
-  private final EmailNotificationAuditFacade emailNotificationAuditFacade;
+  public EmailNotificationListener(
+      NotificationService<EmailNotificationMessageDto> notificationService,
+      NotificationAuditFacade<EmailNotificationMessageDto> notificationAuditFacade) {
+    super(notificationService, notificationAuditFacade);
+  }
 
   @KafkaListener(
       topics = "\u0023{kafkaProperties.topics['email-notifications']}",
@@ -39,17 +40,7 @@ public class EmailNotificationListener {
       containerFactory = "concurrentKafkaListenerContainerFactory")
   public void notify(EmailNotificationMessageDto message) {
     log.info("Kafka event received");
-    sendNotification(message);
+    sendNotification(message, Channel.EMAIL);
     log.info("Kafka event processed");
-  }
-
-  private void sendNotification(EmailNotificationMessageDto message) {
-    try {
-      emailNotificationService.notify(message);
-      emailNotificationAuditFacade.sendAuditOnSuccess(Channel.EMAIL, message);
-    } catch (RuntimeException exception) {
-      emailNotificationAuditFacade.sendAuditOnFailure(Channel.EMAIL, message, Step.AFTER, exception.getMessage());
-      throw new NotificationException(exception.getMessage(), exception);
-    }
   }
 }

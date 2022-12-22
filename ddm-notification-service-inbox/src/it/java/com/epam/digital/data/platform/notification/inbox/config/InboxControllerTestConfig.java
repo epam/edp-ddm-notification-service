@@ -16,22 +16,25 @@
 package com.epam.digital.data.platform.notification.inbox.config;
 
 import com.epam.digital.data.platform.integration.idm.service.IdmService;
+import com.epam.digital.data.platform.notification.core.service.NotificationTemplateServiceImpl;
+import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.inbox.controller.InboxNotificationController;
 import com.epam.digital.data.platform.notification.inbox.repository.InboxNotificationRepository;
+import com.epam.digital.data.platform.notification.inbox.repository.InboxNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationService;
-import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationTemplateService;
 import com.epam.digital.data.platform.notification.inbox.service.TokenParserService;
-import com.epam.digital.data.platform.notification.inbox.template.InboxFreemarkerTemplateResolver;
-import org.springframework.boot.test.context.TestConfiguration;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
-@TestConfiguration
+@Configuration
 public class InboxControllerTestConfig {
 
   @Bean
   public InboxNotificationService inboxNotificationService(
-      InboxNotificationTemplateService inboxNotificationTemplateService,
-      InboxFreemarkerTemplateResolver inboxFreemarkerTemplateResolver,
+      @Qualifier("inboxNotificationTemplateService") NotificationTemplateService<String> inboxNotificationTemplateService,
+      FreemarkerTemplateResolver inboxFreemarkerTemplateResolver,
       InboxNotificationRepository inboxNotificationRepository,
       TokenParserService tokenParserService,
       IdmService systemIdmService) {
@@ -47,5 +50,12 @@ public class InboxControllerTestConfig {
   public InboxNotificationController inboxNotificationController(
       InboxNotificationService inboxNotificationService) {
     return new InboxNotificationController(inboxNotificationService);
+  }
+
+  @Bean
+  @Qualifier("inboxNotificationTemplateService")
+  public NotificationTemplateService<String> inboxNotificationTemplateService(
+      InboxNotificationTemplateRepository inboxNotificationTemplateRepository) {
+    return new NotificationTemplateServiceImpl(inboxNotificationTemplateRepository);
   }
 }

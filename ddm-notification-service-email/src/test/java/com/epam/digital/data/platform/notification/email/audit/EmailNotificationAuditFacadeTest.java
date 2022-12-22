@@ -22,8 +22,8 @@ import static org.mockito.Mockito.verify;
 
 import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.audit.DeliveryAuditDto;
-import com.epam.digital.data.platform.notification.dto.audit.NotificationAuditDto;
-import com.epam.digital.data.platform.notification.dto.email.EmailNotificationDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
+import com.epam.digital.data.platform.notification.dto.email.EmailNotificationAuditDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailRecipientDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
@@ -60,7 +60,7 @@ class EmailNotificationAuditFacadeTest {
 
     verify(auditService, times(1)).sendAudit(auditEventArgumentCaptor.capture());
     var auditEvent = auditEventArgumentCaptor.getValue();
-    var notificationAudit = (NotificationAuditDto) auditEvent.getContext().get("notification");
+    var notificationAudit = (EmailNotificationAuditDto) auditEvent.getContext().get("notification");
     assertThat(notificationAudit.getChannel()).isEqualTo(Channel.EMAIL.getValue());
     assertThat(notificationAudit.getSubject()).isEqualTo(
         emailNotificationMsg.getNotification().getSubject());
@@ -89,7 +89,7 @@ class EmailNotificationAuditFacadeTest {
 
   private EmailNotificationMessageDto createMessage() {
     return EmailNotificationMessageDto.builder()
-        .notification(EmailNotificationDto.builder()
+        .notification(NotificationDto.builder()
             .subject("test subject")
             .message("msg")
             .build())

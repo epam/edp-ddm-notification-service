@@ -13,18 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.epam.digital.data.platform.notification.diia.repository;
 
 import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
+import com.epam.digital.data.platform.notification.repository.NotificationTemplateRepository;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional;
-import java.util.UUID;
-
 @Repository
-public interface DiiaNotificationTemplateRepository extends JpaRepository<NotificationTemplate, UUID> {
+public interface DiiaNotificationTemplateRepository extends
+    JpaRepository<NotificationTemplate, UUID>,
+    NotificationTemplateRepository {
 
-  Optional<NotificationTemplate> findByNameAndChannel(String name, String channel);
 }

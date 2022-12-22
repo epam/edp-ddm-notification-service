@@ -24,10 +24,10 @@ import com.epam.digital.data.platform.notification.dto.ChannelObject;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.notification.dto.UserNotificationDto;
 import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
-import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationService;
-import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationTemplateService;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.List;
 import java.util.Map;
@@ -47,15 +47,14 @@ class InboxNotificationProducerTest {
   @Mock
   private InboxNotificationService inboxNotificationService;
   @Mock
-  private InboxNotificationTemplateService inboxNotificationTemplateService;
+  private NotificationTemplateService<String> inboxNotificationTemplateService;
 
   private InboxNotificationProducer producer;
 
   @BeforeEach
   void init() {
-    producer = new InboxNotificationProducer(kafkaTemplate, inboxNotificationService,
-        inboxNotificationTemplateService);
-    producer.setTopic(topic);
+    producer = new InboxNotificationProducer(inboxNotificationTemplateService, kafkaTemplate, topic,
+        inboxNotificationService);
   }
 
   @Test
@@ -79,13 +78,14 @@ class InboxNotificationProducerTest {
         .notification(userNotification)
         .build();
     when(inboxNotificationService.prepareInboxBody(templateName, parameters)).thenReturn(inboxBody);
-    when(inboxNotificationTemplateService.getTitleByTemplateName(templateName)).thenReturn(title);
+    when(inboxNotificationTemplateService.getTitleByNameAndChannel(templateName,
+        Channel.INBOX)).thenReturn(title);
 
     producer.send(recipient, userNotificationMsg);
 
     var expectedMessage = InboxNotificationMessageDto.builder()
         .recipientName(recipientId)
-        .notification(InboxNotificationDto.builder()
+        .notification(NotificationDto.builder()
             .message(inboxBody)
             .subject(title)
             .build())

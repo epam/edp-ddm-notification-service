@@ -20,10 +20,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.epam.digital.data.platform.notification.dto.email.EmailNotificationDto;
+import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailRecipientDto;
-import com.epam.digital.data.platform.notification.email.template.FreemarkerTemplateResolver;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class EmailNotificationServiceTest {
 
   @Mock
-  private EmailNotificationTemplateService templateService;
+  private NotificationTemplateService<String> templateService;
   @Mock
   private FreemarkerTemplateResolver templateResolver;
   @Mock
@@ -50,7 +51,7 @@ class EmailNotificationServiceTest {
     var subject = "subject";
     var message = "message";
     var email = "email@dot.com";
-    var notification = EmailNotificationDto.builder().subject(subject)
+    var notification = NotificationDto.builder().subject(subject)
         .message(message).build();
     var recipient = EmailRecipientDto.builder().email(email).build();
     var msgDto = EmailNotificationMessageDto.builder()
@@ -65,11 +66,11 @@ class EmailNotificationServiceTest {
   @Test
   void prepareEmailBody() {
     var data = new HashMap<String, Object>();
-    when(templateService.getByNameAndChannel("name", Channel.EMAIL)).thenReturn("content");
+    when(templateService.getContentByNameAndChannel("name", Channel.EMAIL)).thenReturn("content");
 
     service.prepareEmailBody("name", Map.of());
 
-    verify(templateService, times(1)).getByNameAndChannel("name", Channel.EMAIL);
+    verify(templateService, times(1)).getContentByNameAndChannel("name", Channel.EMAIL);
     verify(templateResolver, times(1)).resolve("name", "content", data);
   }
 }

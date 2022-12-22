@@ -16,43 +16,31 @@
 
 package com.epam.digital.data.platform.notification.inbox.producer;
 
+import com.epam.digital.data.platform.notification.core.producer.AbstractNotificationProducer;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
-import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationDto;
+import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.notification.exception.NotificationTemplateNotFoundException;
 import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationService;
-import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationTemplateService;
-import com.epam.digital.data.platform.notification.producer.NotificationProducer;
+import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
-import java.util.Objects;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 
 @Slf4j
-@Setter
-@RequiredArgsConstructor
-public class InboxNotificationProducer implements NotificationProducer {
+public class InboxNotificationProducer extends
+    AbstractNotificationProducer<InboxNotificationMessageDto> {
 
-  @Value("\u0023{kafkaProperties.topics['inbox-notifications']}")
-  private String topic;
-
-  private final KafkaTemplate<String, Object> kafkaTemplate;
   private final InboxNotificationService inboxNotificationService;
-  private final InboxNotificationTemplateService inboxNotificationTemplateService;
 
-  @Override
-  public void send(Recipient recipient, UserNotificationMessageDto message) {
-    log.info("Sending inbox notification Kafka message");
-    var inboxNotificationMessageDto = createMessageDto(recipient, message);
-
-    if (Objects.nonNull(inboxNotificationMessageDto)) {
-      kafkaTemplate.send(topic, inboxNotificationMessageDto);
-      log.info("Inbox notification Kafka message is sent, context: {}", message.getContext());
-    }
+  public InboxNotificationProducer(
+      NotificationTemplateService<String> notificationTemplateService,
+      KafkaTemplate<String, Object> kafkaTemplate,
+      String topic,
+      InboxNotificationService inboxNotificationService) {
+    super(notificationTemplateService, kafkaTemplate, topic);
+    this.inboxNotificationService = inboxNotificationService;
   }
 
   @Override
@@ -60,7 +48,8 @@ public class InboxNotificationProducer implements NotificationProducer {
     return Channel.INBOX;
   }
 
-  private InboxNotificationMessageDto createMessageDto(Recipient recipient,
+  @Override
+  public InboxNotificationMessageDto createMessageDto(Recipient recipient,
       UserNotificationMessageDto message) {
     String messageBody;
     String title;
@@ -73,14 +62,13 @@ public class InboxNotificationProducer implements NotificationProducer {
           message.getNotification().getTemplateName(), getChannel().getValue());
       throw e;
     }
-
     return InboxNotificationMessageDto.builder()
+        .recipientName(recipient.getId())
         .context(message.getContext())
-        .notification(InboxNotificationDto.builder()
+        .notification(NotificationDto.builder()
             .subject(title)
             .message(messageBody)
             .build())
-        .recipientName(recipient.getId())
         .build();
   }
 
@@ -89,10 +77,4 @@ public class InboxNotificationProducer implements NotificationProducer {
     return inboxNotificationService.prepareInboxBody(templateName, recipient.getParameters());
   }
 
-  private String getTitle(UserNotificationMessageDto message) {
-    var title = message.getNotification().getTitle();
-    var templateName = message.getNotification().getTemplateName();
-    return Objects.isNull(title) ?
-        inboxNotificationTemplateService.getTitleByTemplateName(templateName) : title;
-  }
 }

@@ -16,41 +16,32 @@
 
 package com.epam.digital.data.platform.notification.inbox.listener;
 
+import com.epam.digital.data.platform.notification.audit.NotificationAuditFacade;
+import com.epam.digital.data.platform.notification.core.listener.AbstractNotificationListener;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
-import com.epam.digital.data.platform.notification.exception.NotificationException;
-import com.epam.digital.data.platform.notification.inbox.audit.InboxNotificationAuditFacade;
-import com.epam.digital.data.platform.notification.inbox.service.InboxNotificationService;
+import com.epam.digital.data.platform.notification.service.NotificationService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
-import com.epam.digital.data.platform.starter.audit.model.Step;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.annotation.KafkaListener;
 
 @Slf4j
-@RequiredArgsConstructor
-public class InboxNotificationListener {
+public class InboxNotificationListener extends
+    AbstractNotificationListener<InboxNotificationMessageDto> {
 
-  private final InboxNotificationService inboxNotificationService;
-  private final InboxNotificationAuditFacade inboxNotificationAuditFacade;
+  public InboxNotificationListener(
+      NotificationService<InboxNotificationMessageDto> notificationService,
+      NotificationAuditFacade<InboxNotificationMessageDto> notificationAuditFacade) {
+    super(notificationService, notificationAuditFacade);
+  }
 
   @KafkaListener(
       topics = "\u0023{kafkaProperties.topics['inbox-notifications']}",
       groupId = "\u0023{kafkaProperties.consumer.groupId}",
       containerFactory = "concurrentKafkaListenerContainerFactory")
+  @Override
   public void notify(InboxNotificationMessageDto message) {
     log.info("Kafka event received");
-    sendNotification(message);
+    sendNotification(message, Channel.INBOX);
     log.info("Kafka event processed");
-  }
-
-  private void sendNotification(InboxNotificationMessageDto message) {
-    try {
-      inboxNotificationService.notify(message);
-      inboxNotificationAuditFacade.sendAuditOnSuccess(Channel.INBOX, message);
-    } catch (RuntimeException exception) {
-      inboxNotificationAuditFacade.sendAuditOnFailure(Channel.INBOX, message, Step.AFTER,
-          exception.getMessage());
-      throw new NotificationException(exception.getMessage(), exception);
-    }
   }
 }
