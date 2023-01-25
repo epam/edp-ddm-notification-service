@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
-@FeignClient(name = "diia-client", url = "${notifications.diia.url}", configuration = FeignConfig.class)
+@FeignClient(name = "diia-client", url = "${external-systems.diia.url}", configuration = FeignConfig.class)
 public interface DiiaRestClient {
 
   @GetMapping("/api/v1/auth/partner/{partnerToken}")

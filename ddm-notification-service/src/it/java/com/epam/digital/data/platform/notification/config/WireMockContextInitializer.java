@@ -54,7 +54,7 @@ public class WireMockContextInitializer implements
     TestPropertyValues.of(
         String.format("user-settings-service.url=http://localhost:%s", userSettingsWireMock.port()), 
         String.format("keycloak.url=http://localhost:%s", keycloakWireMock.port()),
-        String.format("notifications.diia.url=http://localhost:%s", diiaWireMock.port()))
+        String.format("external-systems.diia.url=http://localhost:%s", diiaWireMock.port()))
         .applyTo(applicationContext);
   }
 }

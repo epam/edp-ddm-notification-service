@@ -9,7 +9,7 @@ spring:
         paths:
           - /app/config/main/application.yaml
           - /app/config/smtp/application.yaml
-          - /app/config/diia/application.yaml
+          - /app/config/diia/diia-configuration.yml
       secrets:
         enabled: true
         enable-api: false

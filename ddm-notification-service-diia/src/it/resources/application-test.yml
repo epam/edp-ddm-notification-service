@@ -1,9 +1,12 @@
 notifications:
   enabled: true
+
+external-systems:
   diia:
     url: http://localhost:9561
-    partner: 
-      token: partnerToken
+    auth:
+      secret:
+        token: partnerToken
 
 data-platform:
   datasource:

@@ -1,9 +1,12 @@
 notifications:
   enabled: true
+
+external-systems:
   diia:
     url: localhost:5000
-    partner:
-      token: partnerToken
+    auth:
+      secret:
+        token: partnerToken
 
 data-platform:
   kafka:
