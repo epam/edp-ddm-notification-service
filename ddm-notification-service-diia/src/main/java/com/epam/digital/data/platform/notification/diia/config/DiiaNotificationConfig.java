@@ -39,7 +39,7 @@ public class DiiaNotificationConfig {
   @Bean
   public DiiaService diiaService(
       DiiaRestClient diiaRestClient,
-      @Value("${notifications.diia.partner.token}") String partnerToken, Clock clock) {
+      @Value("${external-systems.diia.auth.secret.token}") String partnerToken, Clock clock) {
     return new DiiaService(diiaRestClient, partnerToken, clock);
   }
 

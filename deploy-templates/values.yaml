@@ -144,8 +144,8 @@ smtp:
   configMapName: notification-service-channel-configuration
 
 diia:
-  secretName: notification-service-diia-channel-configuration
-  configMapName: notification-service-diia-channel-configuration
+  secretName: diia-secret
+  configMapName: diia-configuration
 
 userSettingsService:
   url: http://user-settings-service-api:8080
@@ -164,3 +164,5 @@ configWatcher:
     # The name of the service account to use.
     # If not set and create is true, a name is generated using the fullname template
     name: ""
+
+diiaMockSecret: diia-secret-mock
