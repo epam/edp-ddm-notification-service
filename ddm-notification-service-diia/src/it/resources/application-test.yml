@@ -21,6 +21,10 @@ spring:
     defer-datasource-initialization: true
   datasource:
     driver-class-name: org.h2.Driver
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterAccess=2h
 
 audit:
   kafka:

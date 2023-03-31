@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +23,7 @@ import com.epam.digital.data.platform.notification.dto.diia.DiiaPublishTemplateR
 import com.epam.digital.data.platform.notification.dto.diia.DiiaSendNotificationRequestDto;
 import com.epam.digital.data.platform.notification.dto.diia.ExternalTemplateId;
 import com.epam.digital.data.platform.notification.service.NotificationService;
-import com.epam.digital.data.platform.starter.security.exception.JwtParsingException;
-import com.nimbusds.jwt.JWTClaimsSet;
-import com.nimbusds.jwt.JWTParser;
-import java.text.ParseException;
-import java.time.Clock;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
@@ -44,9 +37,7 @@ public class DiiaService implements NotificationService<DiiaNotificationMessageD
 
   private final DiiaRestClient diiaRestClient;
   private final String partnerToken;
-  private final Clock clock;
-
-  private volatile String accessToken;
+  private final TokenCacheService tokenCacheService;
 
   @Override
   public void notify(DiiaNotificationMessageDto message) {
@@ -75,29 +66,8 @@ public class DiiaService implements NotificationService<DiiaNotificationMessageD
   }
 
   private String getAccessToken() {
-    if (accessToken == null || isTokenExpired(accessToken)) {
-      synchronized (this) {
-        if (accessToken == null || isTokenExpired(accessToken)) {
-          accessToken = diiaRestClient.getToken(partnerToken).getToken();
-        }
-      }
-    }
-    return accessToken;
-  }
-
-  private boolean isTokenExpired(String accessToken) {
-    JWTClaimsSet jwtClaimsSet = getClaimsFromToken(accessToken);
-    Date now = new Date(clock.millis());
-    return Optional.of(jwtClaimsSet.getExpirationTime())
-        .map(now::after)
-        .orElse(true);
-  }
-
-  private JWTClaimsSet getClaimsFromToken(String accessToken) {
-    try {
-      return JWTParser.parse(accessToken).getJWTClaimsSet();
-    } catch (ParseException e) {
-      throw new JwtParsingException(e.getMessage());
-    }
+    var cacheName = diiaRestClient.getClass().getName();
+    return tokenCacheService.getCachedTokenOrElse(cacheName, cacheName,
+        () -> diiaRestClient.getToken(partnerToken).getToken());
   }
 }

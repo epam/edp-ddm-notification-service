@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,13 +69,10 @@ class SaveDiiaNotificationTemplateServiceTest {
   NotificationTemplateAttributeRepository notificationTemplateAttributeRepository;
   @Autowired
   WireMockServer diiaWireMock;
-  @Autowired
-  DiiaService diiaService;
 
   @BeforeEach
   void beforeEach() {
     diiaWireMock.resetAll();
-    ReflectionTestUtils.setField(diiaService, "accessToken", null);
     diiaWireMock.
         stubFor(get(urlEqualTo("/api/v1/auth/partner/partnerToken"))
             .willReturn(aResponse()

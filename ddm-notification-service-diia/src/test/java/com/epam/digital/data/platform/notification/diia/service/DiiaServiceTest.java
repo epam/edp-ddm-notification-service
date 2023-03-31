@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@
 package com.epam.digital.data.platform.notification.diia.service;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -27,11 +29,12 @@ import com.epam.digital.data.platform.notification.dto.diia.DiiaRecipientDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaSendNotificationRequestDto;
 import com.epam.digital.data.platform.notification.dto.diia.DiiaToken;
 import com.epam.digital.data.platform.notification.dto.diia.DistributionId;
-import java.time.Clock;
+import java.util.function.Supplier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpHeaders;
 
@@ -44,12 +47,20 @@ class DiiaServiceTest {
 
   @Mock
   private DiiaRestClient feignClient;
+  @Mock
+  private TokenCacheService tokenCacheService;
 
   private DiiaService service;
 
   @BeforeEach
   void beforeEach() {
-    service = new DiiaService(feignClient, PARTNER_TOKEN, Clock.systemDefaultZone());
+    service = new DiiaService(feignClient, PARTNER_TOKEN, tokenCacheService);
+
+    var cacheName = feignClient.getClass().getName();
+    Mockito.doAnswer(invocation -> {
+      Supplier<String> supplier = invocation.getArgument(2);
+      return supplier.get();
+    }).when(tokenCacheService).getCachedTokenOrElse(eq(cacheName), eq(cacheName), any());
   }
 
   @Test

@@ -49,6 +49,10 @@ spring:
       correlation-enabled: true
       remote-fields: x-request-id
       correlation-fields: x-request-id
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterAccess=2h
 
 management:
   endpoints:

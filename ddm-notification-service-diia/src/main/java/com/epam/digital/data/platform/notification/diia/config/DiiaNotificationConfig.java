@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,14 @@ import com.epam.digital.data.platform.notification.diia.producer.DiiaNotificatio
 import com.epam.digital.data.platform.notification.diia.repository.DiiaNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.diia.service.DiiaRestClient;
 import com.epam.digital.data.platform.notification.diia.service.DiiaService;
+import com.epam.digital.data.platform.notification.diia.service.TokenCacheService;
 import com.epam.digital.data.platform.notification.template.NotificationTemplateService;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.cache.CacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -39,8 +41,9 @@ public class DiiaNotificationConfig {
   @Bean
   public DiiaService diiaService(
       DiiaRestClient diiaRestClient,
-      @Value("${external-systems.diia.auth.secret.token}") String partnerToken, Clock clock) {
-    return new DiiaService(diiaRestClient, partnerToken, clock);
+      @Value("${external-systems.diia.auth.secret.token}") String partnerToken,
+      TokenCacheService tokenCacheService) {
+    return new DiiaService(diiaRestClient, partnerToken, tokenCacheService);
   }
 
   @Bean
@@ -68,6 +71,11 @@ public class DiiaNotificationConfig {
   @Bean
   public Clock clock() {
     return Clock.systemDefaultZone();
+  }
+
+  @Bean
+  public TokenCacheService tokenCacheService(CacheManager cacheManager) {
+    return new TokenCacheService(cacheManager);
   }
 
   @Bean
