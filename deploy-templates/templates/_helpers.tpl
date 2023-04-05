@@ -113,27 +113,27 @@ Create the name of the config watcher service account to use
 {{- end -}}
 
 {{- define "issuer.officer" -}}
-{{- if .Values.keycloak.customHost }}
-{{- printf "%s-%s" (include "keycloak.customUrlPrefix" .) .Values.keycloak.realms.officer -}}
-{{- else }}
 {{- printf "%s-%s" (include "keycloak.urlPrefix" .) .Values.keycloak.realms.officer -}}
-{{- end }}
 {{- end -}}
 
 {{- define "issuer.citizen" -}}
-{{- if .Values.keycloak.customHost }}
-{{- printf "%s-%s" (include "keycloak.customUrlPrefix" .) .Values.keycloak.realms.citizen -}}
-{{- else }}
 {{- printf "%s-%s" (include "keycloak.urlPrefix" .) .Values.keycloak.realms.citizen -}}
-{{- end }}
 {{- end -}}
 
 {{- define "issuer.admin" -}}
-{{- if .Values.keycloak.customHost }}
-{{- printf "%s-%s" (include "keycloak.customUrlPrefix" .) .Values.keycloak.realms.admin -}}
-{{- else }}
 {{- printf "%s-%s" (include "keycloak.urlPrefix" .) .Values.keycloak.realms.admin -}}
-{{- end }}
+{{- end -}}
+
+{{- define "custom-issuer.officer" -}}
+{{- printf "%s-%s" (include "keycloak.customUrlPrefix" .) .Values.keycloak.realms.officer -}}
+{{- end -}}
+
+{{- define "custom-issuer.citizen" -}}
+{{- printf "%s-%s" (include "keycloak.customUrlPrefix" .) .Values.keycloak.realms.citizen -}}
+{{- end -}}
+
+{{- define "custom-issuer.admin" -}}
+{{- printf "%s-%s" (include "keycloak.customUrlPrefix" .) .Values.keycloak.realms.admin -}}
 {{- end -}}
 
 {{- define "jwksUri.officer" -}}
