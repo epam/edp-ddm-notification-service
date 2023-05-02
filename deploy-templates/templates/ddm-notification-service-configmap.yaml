@@ -27,7 +27,7 @@ data:
           keystore-type: {{ .Values.kafka.sslCertType }}
           truststore-type: {{ .Values.kafka.sslCertType }}
       datasource:
-        url: jdbc:postgresql://{{.Values.db.url}}:{{.Values.db.port}}/{{.Values.db.name}}
+        url: jdbc:postgresql://{{.Values.db.url}}:{{.Values.db.port}}/{{.Values.db.name}}?ApplicationName={{ .Chart.Name }}
         connection-timeout: {{.Values.db.connectionTimeout}}
 
     keycloak:
