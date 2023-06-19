@@ -30,13 +30,13 @@
 		<ddm-starter-database.version>1.6.0.1</ddm-starter-database.version>
 		<ddm-starter-security.version>1.6.0.13</ddm-starter-security.version>
 		<ddm-idm-client.version>1.6.0.4</ddm-idm-client.version>
-		<ddm-data-factory-client.version>1.8.0.1</ddm-data-factory-client.version>
+		<ddm-data-factory-client.version>1.8.0.9</ddm-data-factory-client.version>
 		<ddm-starter-audit.version>1.6.0.2</ddm-starter-audit.version>
 		<log4j.version>2.17.0</log4j.version>
 		<greenmail-junit5.version>1.6.10</greenmail-junit5.version>
 		<freemarker.version>2.3.31</freemarker.version>
 		<awaitility.version>4.0.2</awaitility.version>
-		<bpms.api.version>1.6.0.1</bpms.api.version>
+		<bpms.api.version>1.9.5.15</bpms.api.version>
 		<settings.model.version>1.8.0.4</settings.model.version>
 		<junit.jupiter.version>5.9.0</junit.jupiter.version>
 		<nimbus-jose-jwt.version>9.25.6</nimbus-jose-jwt.version>
