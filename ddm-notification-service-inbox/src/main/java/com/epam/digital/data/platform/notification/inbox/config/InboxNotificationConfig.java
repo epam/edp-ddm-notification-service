@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.epam.digital.data.platform.notification.inbox.config;
 
-import com.epam.digital.data.platform.integration.idm.service.IdmService;
+import com.epam.digital.data.platform.notification.core.service.IdmServiceProvider;
 import com.epam.digital.data.platform.notification.core.service.NotificationTemplateServiceImpl;
 import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.inbox.audit.InboxNotificationAuditFacade;
@@ -46,13 +46,13 @@ public class InboxNotificationConfig {
       FreemarkerTemplateResolver inboxFreemarkerTemplateResolver,
       InboxNotificationRepository inboxNotificationRepository,
       TokenParserService tokenParserService,
-      IdmService systemIdmService) {
+      IdmServiceProvider idmServiceProvider) {
     return new InboxNotificationService(
         inboxNotificationTemplateService,
         inboxFreemarkerTemplateResolver,
         inboxNotificationRepository,
         tokenParserService,
-        systemIdmService);
+        idmServiceProvider);
   }
 
   @Bean

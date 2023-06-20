@@ -25,7 +25,11 @@ audit:
 
 keycloak:
   url: http://localhost:8200
-  system-user:
-    realm: test-realm
-    client-id: client-id
-    client-secret: client-secret
+  citizen-user:
+    realm: citizen-realm
+    client-id: citizen-client-id
+    client-secret: citizen-client-secret
+  officer-user:
+    realm: officer-realm
+    client-id: officer-client-id
+    client-secret: officer-client-secret

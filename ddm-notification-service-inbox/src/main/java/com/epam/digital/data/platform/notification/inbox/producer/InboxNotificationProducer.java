@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,6 +64,7 @@ public class InboxNotificationProducer extends
     }
     return InboxNotificationMessageDto.builder()
         .recipientName(recipient.getId())
+        .recipientRealm(recipient.getRealm())
         .context(message.getContext())
         .notification(NotificationDto.builder()
             .subject(title)

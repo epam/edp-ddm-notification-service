@@ -82,7 +82,8 @@ tolerations: []
 affinity: {}
 
 appConfigMountPath: "/app/config/main"
-secretsMountPath: "/app/secrets/main"
+citizenKeycloakClientSecretsMountPath: "/app/secrets/citizen-realm-admin-client"
+officerKeycloakClientSecretsMountPath: "/app/secrets/officer-realm-admin-client"
 dbSecretMountPath: "/app/secrets/db"
 smtpSecretMountPath: "/app/secrets/smtp"
 smtpConfigMapMountPath: "/app/config/smtp"
@@ -123,11 +124,16 @@ db:
   connectionTimeout: 4000
 
 keycloak:
-  systemUserClient:
+  citizenClient:
     clientName: realm-admin
     realm: citizen-portal
     public: false
     secretName: keycloak-realm-admin-citizen-client-secret
+  officerClient:
+    clientName: realm-admin
+    realm: officer-portal
+    public: false
+    secretName: keycloak-realm-admin-officer-client-secret
   realms:
     officer: officer-portal
     citizen: citizen-portal

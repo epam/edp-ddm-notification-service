@@ -1,0 +1,10 @@
+[
+    {
+        "id": "ee3161f8-ec06-4735-b1c7-2090b0914eaa",
+        "name": "citizen",
+        "description": "Test",
+        "composite": false,
+        "clientRole": false,
+        "containerId": "fa96e275-f642-4da1-b812-a925c37ad93c"
+    }
+]

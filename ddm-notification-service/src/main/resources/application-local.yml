@@ -13,10 +13,14 @@ user-settings-service:
 
 keycloak:
   url: http://localhost:8200
-  system-user:
-    realm: systemUserRealm
-    client-id: systemUserClientId
-    client-secret: systemUserClientSecret
+  citizen-user:
+    realm: citizenUserRealm
+    client-id: citizenUserClientId
+    client-secret: citizenUserClientSecret
+  officer-user:
+    realm: officerUserRealm
+    client-id: officerUserClientId
+    client-secret: officerUserClientSecret
 
 audit:
   kafka:

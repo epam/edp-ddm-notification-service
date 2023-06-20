@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,7 +28,9 @@ import static org.mockito.Mockito.when;
 
 import com.epam.digital.data.platform.integration.idm.model.IdmUser;
 import com.epam.digital.data.platform.integration.idm.service.IdmService;
+import com.epam.digital.data.platform.notification.core.service.IdmServiceProvider;
 import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
+import com.epam.digital.data.platform.notification.dto.Recipient.RecipientRealm;
 import com.epam.digital.data.platform.notification.dto.audit.NotificationDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationResponseDto;
@@ -68,6 +70,8 @@ class InboxNotificationServiceTest {
   private TokenParserService tokenParserService;
   @Mock
   private IdmService idmService;
+  @Mock
+  IdmServiceProvider idmServiceProvider;
   @InjectMocks
   private InboxNotificationService service;
 
@@ -81,7 +85,9 @@ class InboxNotificationServiceTest {
     var msgDto = InboxNotificationMessageDto.builder()
         .notification(notification)
         .recipientName(recipientId)
+        .recipientRealm(RecipientRealm.CITIZEN)
         .build();
+    when(idmServiceProvider.getIdmService(RecipientRealm.CITIZEN)).thenReturn(idmService);
     when(idmService.getUserByUserName("recipientId"))
         .thenReturn(List.of(
             IdmUser.builder()

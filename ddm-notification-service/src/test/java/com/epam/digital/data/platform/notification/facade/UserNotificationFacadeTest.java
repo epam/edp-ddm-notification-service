@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,19 +30,20 @@ import com.epam.digital.data.platform.notification.dto.ChannelObject;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.notification.dto.UserNotificationDto;
 import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
+import com.epam.digital.data.platform.notification.email.mapper.EmailChannelMapper;
+import com.epam.digital.data.platform.notification.email.producer.EmailNotificationProducer;
 import com.epam.digital.data.platform.notification.exception.NotificationException;
 import com.epam.digital.data.platform.notification.exception.NotificationTemplateNotFoundException;
-import com.epam.digital.data.platform.notification.email.producer.EmailNotificationProducer;
-import com.epam.digital.data.platform.notification.email.mapper.EmailChannelMapper;
 import com.epam.digital.data.platform.notification.inbox.mapper.InboxChannelMapper;
 import com.epam.digital.data.platform.notification.inbox.producer.InboxNotificationProducer;
-import com.epam.digital.data.platform.notification.service.UserSettingsService;
+import com.epam.digital.data.platform.notification.service.UserService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.settings.model.dto.ChannelReadDto;
 import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
 import com.epam.digital.data.platform.starter.audit.model.Step;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,7 +56,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 public class UserNotificationFacadeTest {
 
   @Mock
-  private UserSettingsService userSettingsService;
+  private UserService userService;
   @Mock
   private EmailNotificationProducer emailNotificationProducer;
   @Mock
@@ -68,7 +69,7 @@ public class UserNotificationFacadeTest {
   void setup() {
     notificationFacade =
         new UserNotificationFacade(
-            userSettingsService,
+            userService,
             notificationAuditFacade,
             Map.of(Channel.EMAIL, emailNotificationProducer,
                 Channel.INBOX, inboxNotificationProducer),
@@ -80,10 +81,10 @@ public class UserNotificationFacadeTest {
 
   @Test
   void shouldNotNotifyInactiveChannel() {
-    var recipient = "recipient";
+    var recipient = Recipient.builder().id("recipient").parameters(new HashMap<>()).build();
     var message = UserNotificationMessageDto.builder()
         .notification(UserNotificationDto.builder().build())
-        .recipients(List.of(Recipient.builder().id(recipient).build()))
+        .recipients(List.of(recipient))
         .build();
     var settingsReadDto = new SettingsReadDto();
     var emailChannel = new ChannelReadDto();
@@ -91,7 +92,7 @@ public class UserNotificationFacadeTest {
     emailChannel.setActivated(false);
     emailChannel.setAddress("address");
     settingsReadDto.setChannels(Collections.singletonList(emailChannel));
-    when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
+    when(userService.getUserSettings(recipient)).thenReturn(settingsReadDto);
 
     notificationFacade.sendNotification(message);
 
@@ -100,8 +101,7 @@ public class UserNotificationFacadeTest {
 
   @Test
   void shouldNotifyActiveValidChannel() {
-    var recipient = "recipient";
-    var recipientDto = Recipient.builder().id(recipient).build();
+    var recipientDto = Recipient.builder().id("recipient").parameters(new HashMap<>()).build();
     var message = UserNotificationMessageDto.builder()
         .notification(UserNotificationDto.builder().build())
         .recipients(List.of(recipientDto))
@@ -112,7 +112,7 @@ public class UserNotificationFacadeTest {
     emailChannel.setActivated(true);
     emailChannel.setAddress("address");
     settingsReadDto.setChannels(Collections.singletonList(emailChannel));
-    when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
+    when(userService.getUserSettings(recipientDto)).thenReturn(settingsReadDto);
 
     notificationFacade.sendNotification(message);
 
@@ -121,17 +121,17 @@ public class UserNotificationFacadeTest {
 
   @Test
   void shouldNotNotifyUnimplementedChannel() {
-    var recipient = "recipient";
+    var recipient = Recipient.builder().id("recipient").parameters(new HashMap<>()).build();
     var message = UserNotificationMessageDto.builder()
         .notification(UserNotificationDto.builder().build())
-        .recipients(List.of(Recipient.builder().id(recipient).build()))
+        .recipients(List.of(recipient))
         .build();
     var settingsReadDto = new SettingsReadDto();
     var emailChannel = new ChannelReadDto();
     emailChannel.setChannel(Channel.DIIA);
     emailChannel.setActivated(true);
     settingsReadDto.setChannels(new ArrayList<>(Collections.singletonList(emailChannel)));
-    when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
+    when(userService.getUserSettings(recipient)).thenReturn(settingsReadDto);
 
     notificationFacade.sendNotification(message);
 
@@ -152,12 +152,12 @@ public class UserNotificationFacadeTest {
 
   @Test
   void shouldAuditOnFailureWhenUserSettingsNotFound() {
-    var recipient = "recipient";
+    var recipient = Recipient.builder().id("recipient").build();
     var message = UserNotificationMessageDto.builder()
         .notification(UserNotificationDto.builder().build())
-        .recipients(List.of(Recipient.builder().id(recipient).build()))
+        .recipients(List.of(recipient))
         .build();
-    when(userSettingsService.getByUsername(recipient)).thenThrow(IllegalArgumentException.class);
+    when(userService.getUserSettings(recipient)).thenThrow(IllegalArgumentException.class);
 
     notificationFacade.sendNotification(message);
 
@@ -167,13 +167,13 @@ public class UserNotificationFacadeTest {
 
   @Test
   void shouldAuditOnNotificationFailure() {
-    var recipient = "recipient";
-    var recipientDto = Recipient.builder().id(recipient)
+    var recipient = Recipient.builder().id("recipient")
         .channels(List.of(new ChannelObject("email", "address", null)))
+        .parameters(new HashMap<>())
         .build();
     var message = UserNotificationMessageDto.builder()
         .notification(UserNotificationDto.builder().build())
-        .recipients(List.of(Recipient.builder().id(recipient).build()))
+        .recipients(List.of(recipient))
         .build();
     var settingsReadDto = new SettingsReadDto();
     var emailChannel = new ChannelReadDto();
@@ -181,9 +181,9 @@ public class UserNotificationFacadeTest {
     emailChannel.setActivated(true);
     emailChannel.setAddress("address");
     settingsReadDto.setChannels(Collections.singletonList(emailChannel));
-    when(userSettingsService.getByUsername(recipient)).thenReturn(settingsReadDto);
+    when(userService.getUserSettings(recipient)).thenReturn(settingsReadDto);
     doThrow(new NotificationTemplateNotFoundException("template-id"))
-        .when(emailNotificationProducer).send(recipientDto, message);
+        .when(emailNotificationProducer).send(recipient, message);
 
     notificationFacade.sendNotification(message);
 
@@ -194,13 +194,17 @@ public class UserNotificationFacadeTest {
 
   @Test
   void shouldNotifyOnlyPassedChannelWithIgnorePreferences() {
-    var recipient = "recipient";
+    var roles = List.of("citizen");
     var channelObject = ChannelObject.builder().channel("email").build();
-    var recipientDto = Recipient.builder().id(recipient).channels(List.of(channelObject)).build();
+    var recipientDto = Recipient.builder()
+        .id("recipient")
+        .parameters(new HashMap<>())
+        .channels(List.of(channelObject)).build();
     var message = UserNotificationMessageDto.builder()
         .notification(UserNotificationDto.builder().ignoreChannelPreferences(true).build())
         .recipients(List.of(recipientDto))
         .build();
+    when(userService.getUserRoles(recipientDto)).thenReturn(roles);
 
     notificationFacade.sendNotification(message);
 

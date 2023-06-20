@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.util.Map;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Data
@@ -32,4 +33,15 @@ public class Recipient {
   private String id;
   private List<ChannelObject> channels;
   private Map<String, Object> parameters;
+  private RecipientRealm realm;
+
+  @Getter
+  @AllArgsConstructor
+  public enum RecipientRealm {
+
+    OFFICER("officer"),
+    CITIZEN("citizen");
+
+    private final String name;
+  }
 }

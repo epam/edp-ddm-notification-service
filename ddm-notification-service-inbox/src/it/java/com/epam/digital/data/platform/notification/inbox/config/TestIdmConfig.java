@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import com.epam.digital.data.platform.integration.idm.config.IdmClientServiceCon
 import com.epam.digital.data.platform.integration.idm.factory.IdmServiceFactory;
 import com.epam.digital.data.platform.integration.idm.model.KeycloakClientProperties;
 import com.epam.digital.data.platform.integration.idm.service.IdmService;
+import com.epam.digital.data.platform.notification.core.service.IdmServiceProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -36,17 +37,39 @@ public class TestIdmConfig {
   public final IdmServiceFactory idmServiceFactory;
 
   @Bean
-  @ConditionalOnProperty(prefix = "keycloak.system-user", value = "realm")
-  @ConfigurationProperties(prefix = "keycloak.system-user")
-  public KeycloakClientProperties systemRealmProperties() {
+  @ConditionalOnProperty(prefix = "keycloak.citizen-user", value = "realm")
+  @ConfigurationProperties(prefix = "keycloak.citizen-user")
+  public KeycloakClientProperties citizenRealmProperties() {
     return new KeycloakClientProperties();
   }
 
   @Bean
-  @ConditionalOnBean(name = "systemRealmProperties")
-  public IdmService systemIdmService(KeycloakClientProperties systemUserRealmProperties) {
-    return idmServiceFactory.createIdmService(systemUserRealmProperties.getRealm(),
-        systemUserRealmProperties.getClientId(),
-        systemUserRealmProperties.getClientSecret());
+  @ConditionalOnBean(name = "citizenRealmProperties")
+  public IdmService citizenIdmService(KeycloakClientProperties citizenRealmProperties) {
+    return idmServiceFactory.createIdmService(citizenRealmProperties.getRealm(),
+        citizenRealmProperties.getClientId(),
+        citizenRealmProperties.getClientSecret());
+  }
+
+  @Bean
+  @ConditionalOnProperty(prefix = "keycloak.officer-user", value = "realm")
+  @ConfigurationProperties(prefix = "keycloak.officer-user")
+  public KeycloakClientProperties officerRealmProperties() {
+    return new KeycloakClientProperties();
+  }
+
+  @Bean
+  @ConditionalOnBean(name = "officerRealmProperties")
+  public IdmService officerIdmService(KeycloakClientProperties officerRealmProperties) {
+    return idmServiceFactory.createIdmService(officerRealmProperties.getRealm(),
+        officerRealmProperties.getClientId(),
+        officerRealmProperties.getClientSecret());
+  }
+
+  @Bean
+  @ConditionalOnBean(name = {"officerIdmService", "citizenIdmService"})
+  public IdmServiceProvider idmServiceProvider(IdmService officerIdmService,
+      IdmService citizenIdmService) {
+    return new IdmServiceProvider(officerIdmService, citizenIdmService);
   }
 }

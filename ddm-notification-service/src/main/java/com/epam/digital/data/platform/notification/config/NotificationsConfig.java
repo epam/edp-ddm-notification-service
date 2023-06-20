@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,12 @@
 package com.epam.digital.data.platform.notification.config;
 
 import com.epam.digital.data.platform.datafactory.settings.client.UserSettingsFeignClient;
-import com.epam.digital.data.platform.integration.idm.service.IdmService;
 import com.epam.digital.data.platform.notification.audit.UserNotificationAuditFacade;
+import com.epam.digital.data.platform.notification.core.service.IdmServiceProvider;
 import com.epam.digital.data.platform.notification.facade.UserNotificationFacade;
 import com.epam.digital.data.platform.notification.mapper.ChannelMapper;
 import com.epam.digital.data.platform.notification.producer.NotificationProducer;
-import com.epam.digital.data.platform.notification.service.UserSettingsService;
+import com.epam.digital.data.platform.notification.service.UserService;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.starter.audit.service.AuditService;
 import java.time.Clock;
@@ -57,16 +57,16 @@ public class NotificationsConfig {
   }
 
   @Bean
-  public UserSettingsService userSettingsService(IdmService idmService,
+  public UserService userService(IdmServiceProvider idmServiceProvider,
       UserSettingsFeignClient userSettingsFeignClient) {
-    return new UserSettingsService(idmService, userSettingsFeignClient);
+    return new UserService(idmServiceProvider, userSettingsFeignClient);
   }
 
   @Bean
-  public UserNotificationFacade userNotificationFacade(UserSettingsService userSettingsService,
+  public UserNotificationFacade userNotificationFacade(UserService userService,
       UserNotificationAuditFacade notificationAuditFacade,
       Map<Channel, NotificationProducer> channelProducerMap, Map<Channel, ChannelMapper> channelMapperMap) {
-    return new UserNotificationFacade(userSettingsService, notificationAuditFacade,
+    return new UserNotificationFacade(userService, notificationAuditFacade,
         channelProducerMap, channelMapperMap);
   }
 

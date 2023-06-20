@@ -14,24 +14,26 @@
  * limitations under the License.
  */
 
-package com.epam.digital.data.platform.notification.dto.inbox;
+package com.epam.digital.data.platform.notification.core.service;
 
+import com.epam.digital.data.platform.integration.idm.service.IdmService;
 import com.epam.digital.data.platform.notification.dto.Recipient.RecipientRealm;
-import com.epam.digital.data.platform.notification.dto.audit.NotificationMessageDto;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.RequiredArgsConstructor;
 
-@Data
-@SuperBuilder
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class InboxNotificationMessageDto extends NotificationMessageDto {
+@RequiredArgsConstructor
+public class IdmServiceProvider {
 
-  private String recipientName;
-  private RecipientRealm recipientRealm;
+  private final IdmService officerIdmService;
+  private final IdmService citizenIdmService;
 
+  public IdmService getIdmService(RecipientRealm realm) {
+    switch (realm) {
+      case OFFICER:
+        return officerIdmService;
+      case CITIZEN:
+        return citizenIdmService;
+      default:
+        throw new IllegalArgumentException("Realm must be one of ['officer', 'citizen']");
+    }
+  }
 }

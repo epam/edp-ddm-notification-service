@@ -32,9 +32,12 @@ data:
 
     keycloak:
       url: {{ template "keycloak.url" . }}
-      system-user:
+      citizen-user:
         realm: {{ template "keycloak.citizenTargetRealm" . }}
-        client-id: {{ .Values.keycloak.systemUserClient.clientName }}
+        client-id: {{ .Values.keycloak.citizenClient.clientName }}
+      officer-user:
+        realm: {{ template "keycloak.officerTargetRealm" . }}
+        client-id: {{ .Values.keycloak.officerClient.clientName }}
 
     user-settings-service:
       url: {{ .Values.userSettingsService.url }}

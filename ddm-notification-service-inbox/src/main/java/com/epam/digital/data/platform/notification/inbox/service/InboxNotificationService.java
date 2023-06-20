@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.epam.digital.data.platform.notification.inbox.service;
 
-import com.epam.digital.data.platform.integration.idm.service.IdmService;
+import com.epam.digital.data.platform.notification.core.service.IdmServiceProvider;
 import com.epam.digital.data.platform.notification.core.template.FreemarkerTemplateResolver;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.inbox.InboxNotificationResponseDto;
@@ -45,13 +45,14 @@ public class InboxNotificationService implements NotificationService<InboxNotifi
   private final FreemarkerTemplateResolver templateResolver;
   private final InboxNotificationRepository inboxNotificationRepository;
   private final TokenParserService tokenParserService;
-  private final IdmService systemIdmService;
+  private final IdmServiceProvider idmServiceProvider;
 
   public void notify(InboxNotificationMessageDto message) {
     log.info("Sending inbox notification - saving in database");
     log.info("Getting user id by username");
 
-    var users = systemIdmService.getUserByUserName(message.getRecipientName());
+    var idmService = idmServiceProvider.getIdmService(message.getRecipientRealm());
+    var users = idmService.getUserByUserName(message.getRecipientName());
     if (users.isEmpty()) {
       throw new IllegalArgumentException("User not found by username");
     }

@@ -83,8 +83,10 @@ spec:
               name: {{ .Chart.Name }}
             - mountPath: {{ .Values.dbSecretMountPath }}
               name: {{ .Values.db.secret }}
-            - mountPath: {{ .Values.secretsMountPath }}
-              name: {{ .Values.keycloak.systemUserClient.secretName }}
+            - mountPath: {{ .Values.citizenKeycloakClientSecretsMountPath }}
+              name: {{ .Values.keycloak.citizenClient.secretName }}
+            - mountPath: {{ .Values.officerKeycloakClientSecretsMountPath }}
+              name: {{ .Values.keycloak.officerClient.secretName }}
             - mountPath: {{ .Values.smtpSecretMountPath }}
               name: {{ .Values.smtp.secretName }}-secret
             - mountPath: {{ .Values.smtpConfigMapMountPath }}
@@ -137,12 +139,18 @@ spec:
                 path: data-platform.datasource.username
               - key: notificationServicePass
                 path: data-platform.datasource.password
-        - name: {{ .Values.keycloak.systemUserClient.secretName }}
+        - name: {{ .Values.keycloak.citizenClient.secretName }}
           secret:
-            secretName: {{ .Values.keycloak.systemUserClient.secretName }}
+            secretName: {{ .Values.keycloak.citizenClient.secretName }}
             items:
               - key: clientSecret
-                path: keycloak.system-user.client-secret
+                path: keycloak.citizen-user.client-secret
+        - name: {{ .Values.keycloak.officerClient.secretName }}
+          secret:
+            secretName: {{ .Values.keycloak.officerClient.secretName }}
+            items:
+              - key: clientSecret
+                path: keycloak.officer-user.client-secret
         - name: {{ .Values.smtp.secretName }}-secret
           secret:
             secretName: {{ .Values.smtp.secretName }}

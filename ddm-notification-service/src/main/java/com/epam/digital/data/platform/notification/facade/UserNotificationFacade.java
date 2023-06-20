@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,13 +23,14 @@ import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDt
 import com.epam.digital.data.platform.notification.exception.NotificationException;
 import com.epam.digital.data.platform.notification.mapper.ChannelMapper;
 import com.epam.digital.data.platform.notification.producer.NotificationProducer;
-import com.epam.digital.data.platform.notification.service.UserSettingsService;
+import com.epam.digital.data.platform.notification.service.UserService;
 import com.epam.digital.data.platform.notification.util.MDCWrappedCallable;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
 import com.epam.digital.data.platform.starter.audit.model.Step;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -53,12 +54,14 @@ import org.springframework.util.CollectionUtils;
 @RequiredArgsConstructor
 public class UserNotificationFacade {
 
+  private static final String RECIPIENT_ROLES_ATTRIBUTE = "recipientRoles";
+
   @Value("${recipients-processing.recipients-max-thread-pool-size}")
   private Integer recipientsMaxThreadPoolSize;
   @Value("${recipients-processing.channels-max-thread-pool-size}")
   private Integer channelsMaxThreadPoolSize;
 
-  private final UserSettingsService userSettingsService;
+  private final UserService userService;
   private final UserNotificationAuditFacade auditFacade;
   private final Map<Channel, NotificationProducer> channelProducerMap;
   private final Map<Channel, ChannelMapper> channelMapperMap;
@@ -76,8 +79,10 @@ public class UserNotificationFacade {
   private void notifyEachRecipient(boolean ignorePref, UserNotificationMessageDto message) {
     verifyNotification(message);
     parallelExecution(recipientsMaxThreadPoolSize, message.getRecipients(), recipient -> {
-      List<Channel> channels = getChannels(ignorePref, recipient, recipient.getChannels(), message);
+      var channels = getChannels(ignorePref, recipient, recipient.getChannels(), message);
       log.info("Allowed communication channels {}", channels);
+      var roles = userService.getUserRoles(recipient);
+      recipient.getParameters().put(RECIPIENT_ROLES_ATTRIBUTE, roles);
 
       parallelExecution(channelsMaxThreadPoolSize, channels,
           channel -> sendNotification(channel, recipient, message));
@@ -94,10 +99,10 @@ public class UserNotificationFacade {
     }
   }
 
-  private SettingsReadDto getUserSettings(String recipientId,
+  private SettingsReadDto getUserSettings(Recipient recipient,
       UserNotificationMessageDto userNotificationMessageDto) {
     try {
-      return userSettingsService.getByUsername(recipientId);
+      return userService.getUserSettings(recipient);
     } catch (RuntimeException ex) {
       auditFacade.sendAuditOnFailure(null, userNotificationMessageDto, Step.BEFORE,
           ex.getMessage());
@@ -107,7 +112,7 @@ public class UserNotificationFacade {
 
   private List<Channel> getChannelsFromSettings(Recipient recipient,
       UserNotificationMessageDto notificationRecord) {
-    var userSettings = getUserSettings(recipient.getId(), notificationRecord);
+    var userSettings = getUserSettings(recipient, notificationRecord);
     var channelObjects =
         userSettings.getChannels().stream()
             .filter(channelDto ->

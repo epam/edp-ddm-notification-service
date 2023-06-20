@@ -93,7 +93,11 @@ Create the name of the config watcher service account to use
 {{- end }}
 
 {{- define "keycloak.citizenTargetRealm" -}}
-{{- printf "%s-%s" .Values.namespace .Values.keycloak.systemUserClient.realm }}
+{{- printf "%s-%s" .Values.namespace .Values.keycloak.citizenClient.realm }}
+{{- end -}}
+
+{{- define "keycloak.officerTargetRealm" -}}
+{{- printf "%s-%s" .Values.namespace .Values.keycloak.officerClient.realm }}
 {{- end -}}
 
 {{- define "keycloak.url" -}}

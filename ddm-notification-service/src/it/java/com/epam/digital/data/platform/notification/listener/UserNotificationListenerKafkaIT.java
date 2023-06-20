@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import com.epam.digital.data.platform.notification.audit.UserNotificationAuditFa
 import com.epam.digital.data.platform.notification.core.repository.CoreNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.dto.NotificationContextDto;
 import com.epam.digital.data.platform.notification.dto.Recipient;
+import com.epam.digital.data.platform.notification.dto.Recipient.RecipientRealm;
 import com.epam.digital.data.platform.notification.dto.UserNotificationDto;
 import com.epam.digital.data.platform.notification.dto.UserNotificationMessageDto;
 import com.epam.digital.data.platform.notification.dto.email.EmailNotificationMessageDto;
@@ -53,7 +54,7 @@ import org.springframework.boot.test.mock.mockito.SpyBean;
 
 class UserNotificationListenerKafkaIT extends BaseKafkaIT {
 
-  @Value("${keycloak.system-user.realm}")
+  @Value("${keycloak.citizen-user.realm}")
   private String realm;
   @Autowired
   private CoreNotificationTemplateRepository repository;
@@ -83,6 +84,13 @@ class UserNotificationListenerKafkaIT extends BaseKafkaIT {
             .willReturn(aResponse().withStatus(200)
                 .withHeader("Content-type", "application/json")
                 .withBody(jsonToStr("/json/keycloakUserByUsernameResponse.json"))));
+    keycloakWireMock.stubFor(
+        get(urlPathEqualTo(String.format(
+            "/auth/admin/realms/%s/users/3fa85f64-1234-4562-b3fc-2c963f66afa6/role-mappings/realm",
+            realm)))
+            .willReturn(aResponse().withStatus(200)
+                .withHeader("Content-type", "application/json")
+                .withBody(jsonToStr("/json/keycloakUsersRolesResponse.json"))));
   }
 
   @Test
@@ -146,6 +154,7 @@ class UserNotificationListenerKafkaIT extends BaseKafkaIT {
         .recipients(List.of(
             Recipient.builder()
                 .id("testuser")
+                .realm(RecipientRealm.CITIZEN)
                 .parameters(Map.of("name", "John"))
                 .build()))
         .build();
