@@ -3,6 +3,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ include "ddm-notification-service.fullname" . }}
+  annotations:
+    secret.reloader.stakater.com/reload: "diia-secret"
+    configmap.reloader.stakater.com/reload: "diia-configuration"
   labels:
     {{- include "ddm-notification-service.labels" . | nindent 4 }}
 spec:
