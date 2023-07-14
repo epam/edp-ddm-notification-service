@@ -23,6 +23,8 @@ import com.epam.digital.data.platform.datafactory.settings.client.UserSettingsFe
 import com.epam.digital.data.platform.notification.core.service.IdmServiceProvider;
 import com.epam.digital.data.platform.notification.dto.Recipient;
 import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -74,12 +76,14 @@ public class UserService {
    */
   public List<String> getUserRoles(Recipient recipient) {
     log.info("Getting recipient roles by username: {}", recipient.getId());
-    var idmService = idmServiceProvider.getIdmService(recipient.getRealm());
-    var recipientRoles = idmService.getUserRoles(recipient.getId());
-    log.info("Found {} recipient roles", recipientRoles.size());
-    return recipientRoles.stream()
-        .map(RoleRepresentation::getName)
-        .collect(toList());
+    if (Objects.nonNull(recipient.getId())) {
+      var idmService = idmServiceProvider.getIdmService(recipient.getRealm());
+      var recipientRoles = idmService.getUserRoles(recipient.getId());
+      log.info("Found {} recipient roles", recipientRoles.size());
+      return recipientRoles.stream().map(RoleRepresentation::getName).collect(toList());
+    } else {
+      return Collections.emptyList();
+    }
   }
 
   private HttpHeaders createHeaders(String accessToken) {

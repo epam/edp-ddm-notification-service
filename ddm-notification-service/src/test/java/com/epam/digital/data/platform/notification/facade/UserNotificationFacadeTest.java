@@ -211,4 +211,22 @@ public class UserNotificationFacadeTest {
     verify(emailNotificationProducer).send(recipientDto, message);
     verify(inboxNotificationProducer, times(0)).send(recipientDto, message);
   }
+
+  @Test
+  void shouldNotifyWithNullRecipientId() {
+    var channelObject = ChannelObject.builder().channel("email").build();
+    var recipientDto = Recipient.builder()
+            .parameters(new HashMap<>())
+            .channels(List.of(channelObject)).build();
+    var message = UserNotificationMessageDto.builder()
+            .notification(UserNotificationDto.builder().ignoreChannelPreferences(true).build())
+            .recipients(List.of(recipientDto))
+            .build();
+    when(userService.getUserRoles(recipientDto)).thenCallRealMethod();
+
+    notificationFacade.sendNotification(message);
+
+    verify(emailNotificationProducer).send(recipientDto, message);
+    verify(inboxNotificationProducer, times(0)).send(recipientDto, message);
+  }
 }
