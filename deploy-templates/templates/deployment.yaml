@@ -108,7 +108,7 @@ spec:
  {{- end }}
           ports:
             - name: http
-              containerPort: 8080
+              containerPort: {{ .Values.service.port }}
               protocol: TCP
 {{- if .Values.framework }}
 {{- if ne .Values.framework "operator-sdk" }}

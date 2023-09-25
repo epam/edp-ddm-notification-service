@@ -4,6 +4,7 @@ kind: Service
 metadata:
   name: {{ include "ddm-notification-service.fullname" . }}
   labels:
+    app: {{ .Chart.Name }}
     {{- include "ddm-notification-service.labels" . | nindent 4 }}
 spec:
   type: {{ .Values.service.type }}
