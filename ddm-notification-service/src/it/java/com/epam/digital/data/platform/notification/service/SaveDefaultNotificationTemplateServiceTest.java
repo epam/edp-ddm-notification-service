@@ -18,6 +18,7 @@ package com.epam.digital.data.platform.notification.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.epam.digital.data.platform.notification.DdmNotificationServiceApplication;
 import com.epam.digital.data.platform.notification.core.repository.CoreNotificationTemplateRepository;
 import com.epam.digital.data.platform.notification.dto.NotificationTemplateAttributeDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
@@ -35,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @ActiveProfiles("test")
 @Transactional
-@SpringBootTest(properties = {"notifications.enabled=false"})
+@SpringBootTest(properties = {"notifications.enabled=false"}, classes = DdmNotificationServiceApplication.class)
 class SaveDefaultNotificationTemplateServiceTest {
 
   private static final String CHANNEL = "email";

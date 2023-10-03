@@ -19,10 +19,9 @@ package com.epam.digital.data.platform.notification.service;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateOutputDto;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.Map;
 
 @Slf4j
 @RequiredArgsConstructor

@@ -75,8 +75,6 @@ public class UserNotificationFacadeTest {
                 Channel.INBOX, inboxNotificationProducer),
             Map.of(Channel.EMAIL, new EmailChannelMapper(),
                 Channel.INBOX, new InboxChannelMapper()));
-    notificationFacade.setRecipientsMaxThreadPoolSize(10);
-    notificationFacade.setChannelsMaxThreadPoolSize(5);
   }
 
   @Test
@@ -159,7 +157,7 @@ public class UserNotificationFacadeTest {
         .build();
     when(userService.getUserSettings(recipient)).thenThrow(IllegalArgumentException.class);
 
-    notificationFacade.sendNotification(message);
+    assertThrows(NotificationException.class, () -> notificationFacade.sendNotification(message));
 
     verify(notificationAuditFacade, times(1)).sendAuditOnFailure(any(), eq(message),
         eq(Step.BEFORE), any());

@@ -13,17 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.epam.digital.data.platform.notification.repository;
 
-import com.epam.digital.data.platform.notification.entity.NotificationTemplateShortInfo;
-import com.epam.digital.data.platform.notification.entity.NotificationTemplate;
+package com.epam.digital.data.platform.notification.entity;
 
-import java.util.List;
-import java.util.Optional;
+import java.util.UUID;
 
-public interface NotificationTemplateRepository {
-
-  Optional<NotificationTemplate> findByNameAndChannel(String name, String channel);
-
-  List<NotificationTemplateShortInfo> findAllProjectedBy();
+public interface NotificationTemplateShortInfo {
+    UUID getId();
+    String getName();
+    String getChannel();
 }

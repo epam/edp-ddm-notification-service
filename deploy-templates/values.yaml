@@ -2,7 +2,46 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
+global:
+  container:
+    requestsLimitsEnabled: true
+  istio:
+    sidecar:
+      requestsLimitsEnabled: true
+      resources:
+        requests: {}
+        limits: {}
+  kafkaOperator:
+    replicationFactor: 3
+  notifications:
+    email:
+      type: internal
+      address: mock@mail.com
+      password: secure
+      host: smtp.mail.com
+      port: 587
+    diia:
+      url: https://mock.diia.ua/
+      partner:
+        token: mock
+  registry:
+    ddmNotificationService:
+      container:
+        envVars: {}
+        resources:
+          requests: {}
+          limits: {}
+      hpa:
+        enabled: false
+        minReplicas: 1
+        maxReplicas: 3
+      istio:
+        sidecar:
+          enabled: true
+          resources:
+            requests: {}
+            limits: {}
+      replicas: 1
 
 image:
   name: ddm-notification-service
@@ -68,13 +107,6 @@ resources: {}
   #   cpu: 100m
   #   memory: 128Mi
 
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
-
 nodeSelector: {}
 
 tolerations: []
@@ -89,21 +121,6 @@ smtpSecretMountPath: "/app/secrets/smtp"
 smtpConfigMapMountPath: "/app/config/smtp"
 diiaSecretMountPath: "/app/secrets/diia"
 diiaConfigMapMountPath: "/app/config/diia"
-
-global:
-  kafkaOperator:
-    replicationFactor: 3
-  notifications:
-    email:
-      type: internal
-      address: mock@mail.com
-      password: secure
-      host: smtp.mail.com
-      port: 587
-    diia:
-      url: https://mock.diia.ua/
-      partner:
-        token: mock
 
 kafka:
   service: kafka-cluster-kafka-bootstrap:9093

@@ -98,6 +98,12 @@
       <artifactId>commons-lang3</artifactId>
       <version>${apache.commons.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.springdoc</groupId>
+      <artifactId>springdoc-openapi-ui</artifactId>
+      <version>${springdoc.openapi.ui.version}</version>
+    </dependency>
+
 
     <dependency>
       <groupId>com.h2database</groupId>

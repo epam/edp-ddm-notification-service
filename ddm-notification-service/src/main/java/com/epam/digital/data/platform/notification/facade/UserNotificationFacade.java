@@ -24,27 +24,17 @@ import com.epam.digital.data.platform.notification.exception.NotificationExcepti
 import com.epam.digital.data.platform.notification.mapper.ChannelMapper;
 import com.epam.digital.data.platform.notification.producer.NotificationProducer;
 import com.epam.digital.data.platform.notification.service.UserService;
-import com.epam.digital.data.platform.notification.util.MDCWrappedCallable;
 import com.epam.digital.data.platform.settings.model.dto.Channel;
 import com.epam.digital.data.platform.settings.model.dto.SettingsReadDto;
 import com.epam.digital.data.platform.starter.audit.model.Step;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.util.CollectionUtils;
 
 /**
  * The notification facade that responsible for sending notification to user
@@ -55,11 +45,6 @@ import org.springframework.util.CollectionUtils;
 public class UserNotificationFacade {
 
   private static final String RECIPIENT_ROLES_ATTRIBUTE = "recipientRoles";
-
-  @Value("${recipients-processing.recipients-max-thread-pool-size}")
-  private Integer recipientsMaxThreadPoolSize;
-  @Value("${recipients-processing.channels-max-thread-pool-size}")
-  private Integer channelsMaxThreadPoolSize;
 
   private final UserService userService;
   private final UserNotificationAuditFacade auditFacade;
@@ -78,13 +63,12 @@ public class UserNotificationFacade {
 
   private void notifyEachRecipient(boolean ignorePref, UserNotificationMessageDto message) {
     verifyNotification(message);
-    parallelExecution(recipientsMaxThreadPoolSize, message.getRecipients(), recipient -> {
+    message.getRecipients().forEach(recipient -> {
       var channels = getChannels(ignorePref, recipient, recipient.getChannels(), message);
       log.info("Allowed communication channels {}", channels);
       var roles = userService.getUserRoles(recipient);
       recipient.getParameters().put(RECIPIENT_ROLES_ATTRIBUTE, roles);
-
-      parallelExecution(channelsMaxThreadPoolSize, channels,
+      channels.forEach(
           channel -> sendNotification(channel, recipient, message));
     });
   }
@@ -95,7 +79,7 @@ public class UserNotificationFacade {
       channelProducerMap.get(channel).send(recipient, message);
     } catch (RuntimeException exception) {
       auditFacade.sendAuditOnFailure(channel, message, Step.AFTER, exception.getMessage());
-      throw exception;
+      log.error("Failed to send notification to channel ${}", channel, exception);
     }
   }
 
@@ -158,32 +142,6 @@ public class UserNotificationFacade {
       var msg = "Notification is not presented in message";
       auditFacade.sendAuditOnFailure(null, null, Step.BEFORE, msg);
       throw new NotificationException(msg);
-    }
-  }
-
-  @SneakyThrows
-  @SuppressWarnings("unchecked")
-  private <T> void parallelExecution(int poolSize, Collection<T> objects, Consumer<T> consumer) {
-    if (CollectionUtils.isEmpty(objects)) {
-      return;
-    }
-    var threadPoolSize = Math.min(objects.size(), poolSize);
-    var executorService = Executors.newFixedThreadPool(threadPoolSize);
-    var tasks = objects.stream()
-        .map(object -> (Callable<Void>) new MDCWrappedCallable((Callable<Void>) () -> {
-          consumer.accept(object);
-          return null;
-        })).collect(Collectors.toList());
-
-    executorService.invokeAll(tasks).forEach(this::getFuture);
-  }
-
-  private <T> T getFuture(Future<T> future) {
-    try {
-      return future.get();
-    } catch (Exception e) {
-      log.error("Error during sending notifications.", e);
-      return null;
     }
   }
 }

@@ -1,4 +1,3 @@
-{{- if or (not .Values.global.excludePortals) (not (has "citizen" .Values.global.excludePortals)) }}
 {{- if .Values.configWatcher.deploy -}}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -11,5 +10,4 @@ roleRef:
 subjects:
     - kind: ServiceAccount
       name: {{ include "ddm-notification-service.configWatcher.serviceAccountName" . }}
-{{- end }}
 {{- end }}

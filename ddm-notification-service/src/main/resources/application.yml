@@ -86,7 +86,3 @@ management:
         services:
           - ${user-settings-service.url}/actuator/health
           - ${keycloak.url}
-
-recipients-processing:
-  recipients-max-thread-pool-size: 10
-  channels-max-thread-pool-size: 5

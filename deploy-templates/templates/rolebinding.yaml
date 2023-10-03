@@ -1,6 +1,5 @@
 {{ if .Values.framework }}
 {{ if eq .Values.framework "operator-sdk" }}
-{{- if or (not .Values.global.excludePortals) (not (has "citizen" .Values.global.excludePortals)) }}
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
@@ -12,6 +11,5 @@ roleRef:
 subjects:
     - kind: ServiceAccount
       name: {{ include "ddm-notification-service.serviceAccountName" . }}
-{{- end }}
 {{ end }}
 {{ end }}

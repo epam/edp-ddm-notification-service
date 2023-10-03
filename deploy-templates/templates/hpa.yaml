@@ -1,6 +1,6 @@
-{{- if .Values.autoscaling.enabled }}
+{{- if .Values.global.registry.ddmNotificationService.hpa.enabled }}
 {{- if or (not .Values.global.excludePortals) (not (has "citizen" .Values.global.excludePortals)) }}
-apiVersion: autoscaling/v2beta1
+apiVersion: {{ include "horizontalPodAutoscaler.apiVersion" . }}
 kind: HorizontalPodAutoscaler
 metadata:
   name: {{ include "ddm-notification-service.fullname" . }}
@@ -11,20 +11,12 @@ spec:
     apiVersion: apps/v1
     kind: Deployment
     name: {{ include "ddm-notification-service.fullname" . }}
-  minReplicas: {{ .Values.autoscaling.minReplicas }}
-  maxReplicas: {{ .Values.autoscaling.maxReplicas }}
+  minReplicas: {{ .Values.global.registry.ddmNotificationService.hpa.minReplicas }}
+  maxReplicas: {{ .Values.global.registry.ddmNotificationService.hpa.maxReplicas }}
   metrics:
-  {{- if .Values.autoscaling.targetCPUUtilizationPercentage }}
     - type: Resource
       resource:
         name: cpu
-        targetAverageUtilization: {{ .Values.autoscaling.targetCPUUtilizationPercentage }}
-  {{- end }}
-  {{- if .Values.autoscaling.targetMemoryUtilizationPercentage }}
-    - type: Resource
-      resource:
-        name: memory
-        targetAverageUtilization: {{ .Values.autoscaling.targetMemoryUtilizationPercentage }}
-  {{- end }}
+        targetAverageUtilization: 80
 {{- end }}
 {{- end }}

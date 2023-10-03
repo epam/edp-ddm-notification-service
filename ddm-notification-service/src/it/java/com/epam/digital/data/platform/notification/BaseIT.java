@@ -39,7 +39,7 @@ import org.springframework.test.context.ContextConfiguration;
 @ActiveProfiles("test")
 @ContextConfiguration(initializers = {
     WireMockContextInitializer.class,
-    KafkaContextInitializer.class})
+    KafkaContextInitializer.class}, classes = DdmNotificationServiceApplication.class)
 public abstract class BaseIT {
 
   @RegisterExtension

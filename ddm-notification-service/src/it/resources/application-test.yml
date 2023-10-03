@@ -55,3 +55,10 @@ audit:
     schema-registry-url: http://localhost:8081
     ssl:
       enabled: false
+
+
+platform:
+  security:
+    enabled: true
+    whitelist:
+      - /v3/api-docs.yaml

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 EPAM Systems.
+ * Copyright 2023 EPAM Systems.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,14 @@
 
 package com.epam.digital.data.platform.notification.client;
 
+import com.epam.digital.data.platform.notification.dto.NotificationTemplateShortInfoResponseDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateInputDto;
 import com.epam.digital.data.platform.notification.dto.SaveNotificationTemplateOutputDto;
+import java.util.List;
+import java.util.UUID;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -33,4 +38,10 @@ public interface NotificationTemplateRestClient {
       @PathVariable("channel") String channel,
       @PathVariable("name") String name,
       @RequestBody SaveNotificationTemplateInputDto input);
+
+  @GetMapping("/")
+  public List<NotificationTemplateShortInfoResponseDto> getAllTemplates();
+
+  @DeleteMapping("/{id}")
+  public void deleteTemplate(@PathVariable("id") UUID id);
 }
