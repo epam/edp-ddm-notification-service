@@ -142,15 +142,15 @@ db:
 
 keycloak:
   citizenClient:
-    clientName: realm-admin
+    clientName: notification-service-user-viewer
     realm: citizen-portal
     public: false
-    secretName: keycloak-realm-admin-citizen-client-secret
+    secretName: keycloak-user-viewer-citizen-client-secret
   officerClient:
-    clientName: realm-admin
+    clientName: notification-service-user-viewer
     realm: officer-portal
     public: false
-    secretName: keycloak-realm-admin-officer-client-secret
+    secretName: keycloak-user-viewer-officer-client-secret
   realms:
     officer: officer-portal
     citizen: citizen-portal
